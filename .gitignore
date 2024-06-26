@@ -138,3 +138,25 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# macos
+.DS_Store
+
+# soft links
+openai
+Salesforce
+lllyasviel
+
+# data
+/data/
+
+# ckpts
+/ckpts/
+/annotator/ckpts/
+
+# misc
+/tmp/
+/samples/
+
+# fid model
+classify_image_graph_def.pb
