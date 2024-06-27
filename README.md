@@ -94,7 +94,7 @@ Arguments related to dataset:
 
 Arguments related to model:
 
-- `--config`: Path to the config file, e.g., `./configs/ctrlora_pretrain_sd15_9tasks_lora128.yaml`.
+- `--config`: Path to the config file, e.g., `./configs/ctrlora_pretrain_sd15_9tasks_rank128.yaml`.
 - `--sd_ckpt`: Path to the Stable Diffusion checkpoint, e.g., `./ckpts/v1-5-pruned.ckpt`.
 - `--cn_ckpt`: Path to the ControlNet checkpoint, e.g., `./ckpts/control_sd15_init.pth`.
 
@@ -160,7 +160,7 @@ Arguments related to COCO dataset:
 
 Arguments related to model:
 
-- `--config`: Path to the config file, e.g., `./configs/finetune_sd15_lora128.yaml`.
+- `--config`: Path to the config file, e.g., `./configs/ctrlora_finetune_sd15_rank128.yaml`.
 - `--sd_ckpt`: Path to the Stable Diffusion checkpoint, e.g., `./ckpts/v1-5-pruned.ckpt`.
 - `--cn_ckpt`: Path to the ControlNet checkpoint, e.g., `./ckpts/control_sd15_init.pth`.
 
@@ -176,3 +176,49 @@ Arguments related to training:
 - `--ckpt_logger_freq`: Optional. Frequency of saving checkpoints. Default: `1000`.
 
 The training logs and checkpoints will be saved to `./lightning_logs/version_xxx/`.
+
+<br/>
+
+## Sample images
+
+```shell
+python sample.py --dataroot DATAROOT \
+                 [--multigen20m] \
+                 [--coco] \
+                 [--task TASK] \
+                 --config CONFIG \
+                 --ckpt CKPT \
+                 --n_samples N_SAMPLES \
+                 --save_dir SAVE_DIR \
+                 [--ddim_steps DDIM_STEPS] \
+                 [--ddim_eta DDIM_ETA] \
+                 [--strength STRENGTH] \
+                 [--cfg CFG]
+```
+
+Arguments related to custom dataset:
+
+- `--dataroot`: Path to the dataset.
+
+Arguments related to MultiGen-20M dataset:
+
+- `--multigen20m`: Set this flag to use MultiGen-20M.
+- `--dataroot`: Path to the MultiGen-20M dataset, e.g., `./data/MultiGen-20M`.
+- `--task`: Task to test on. Choices: `{'hed', 'canny', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'bbox', 'outpainting', 'inpainting', 'blur', 'grayscale'}`.
+
+Arguments related to COCO dataset:
+
+- `--coco`: Set this flag to use COCO.
+- `--dataroot`: Path to the COCO dataset, e.g., `./data/coco`.
+- `--task`: Task to test on. Choices: `{'jpeg', 'palette', 'depth', 'inpainting', 'blur', 'grayscale'}`.
+
+Arguments related to model:
+
+- `--config`: Path to the config file. e.g., `./configs/ctrlora_finetune_sd15_rank128.yaml`.
+- `--ckpt`: Path to the checkpoint, e.g., `./lightning_logs/version_xxx/checkpoints/xxx.ckpt`.
+- `--n_samples`: Number of samples to generate.
+- `--save_dir`: Directory to save the generated images.
+- `--ddim_steps`: Optional. Number of DDIM steps. Default: `50`.
+- `--ddim_eta`: Optional. DDIM eta. Default: `0.0`.
+- `--strength`: Optional. Strength of the ControlNet. Default: `1.0`.
+- `--cfg`: Optional. Strength of classifier-free guidance. Default: `7.5`.
