@@ -106,7 +106,7 @@ Arguments related to training:
 - `--gradacc`: Optional. Gradient accumulation. Default: `1`.
 - `--precision`: Optional. Precision. Default: `32`.
 - `--save_memory`: Optional. Save memory by using sliced attention. Default: `False`.
-- `--img_logger_freq`: Optional. Frequency of logging images. Default: `1000`.
+- `--img_logger_freq`: Optional. Frequency of logging images. Default: `10000`.
 - `--ckpt_logger_freq`: Optional. Frequency of saving checkpoints. Default: `10000`.
 
 The training logs and checkpoints will be saved to `./lightning_logs/version_xxx/`.

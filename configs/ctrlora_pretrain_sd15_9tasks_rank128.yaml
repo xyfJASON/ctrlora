@@ -1,5 +1,5 @@
 model:
-  target: cldm.cldm_pretrain.ControlPretrainLDM
+  target: cldm.cldm_ctrlora_pretrain.ControlPretrainLDM
   params:
     linear_start: 0.00085
     linear_end: 0.0120
@@ -19,7 +19,7 @@ model:
     only_mid_control: False
 
     control_stage_config:
-      target: cldm.cldm_pretrain.ControlNetPretrain
+      target: cldm.cldm_ctrlora_pretrain.ControlNetPretrain
       params:
         image_size: 32 # unused
         in_channels: 4
