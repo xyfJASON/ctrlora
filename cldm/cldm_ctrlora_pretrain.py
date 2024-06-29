@@ -176,4 +176,7 @@ class ControlPretrainLDM(ControlLDM):
         params = list(self.control_model.parameters())
         opt = torch.optim.AdamW(params, lr=lr)
         print(f'Optimizable params: {sum([p.numel() for p in params])/1e6:.1f}M')
+        with open('./tmp/pretrain_trainable_params.txt', 'w') as f:
+            for n, p in self.control_model.named_parameters():
+                f.write(n + '\n')
         return opt
