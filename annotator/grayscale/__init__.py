@@ -1,10 +1,7 @@
-"""
-Adapted from https://github.com/salesforce/UniControl/blob/main/annotator/grayscale/__init__.py
-"""
-
-from skimage import color
+import cv2
+import numpy as np
 
 
 class GrayscaleConverter:
     def __call__(self, img):
-        return (color.rgb2gray(img) * 255.0).astype('ubyte')
+        return np.stack([cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)] * 3, axis=-1).astype('uint8')

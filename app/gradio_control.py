@@ -20,6 +20,9 @@ from cldm.ddim_hacked import DDIMSampler
 
 
 CKPT_DIR = './ckpts'
+CKPT_SD15_DIR = os.path.join(CKPT_DIR, 'sd15')
+CKPT_BASECN_DIR = os.path.join(CKPT_DIR, 'ctrlora-basecn')
+CKPT_LORAS_DIR = os.path.join(CKPT_DIR, 'ctrlora-loras')
 CONFIG_DIR = './configs'
 
 model = None
@@ -30,14 +33,14 @@ last_ckpts = (None, None, None)
 
 def load_state_dict_sd(sd_ckpt):
     global model
-    state_dict = load_state_dict(os.path.join(CKPT_DIR, sd_ckpt), location='cpu')
+    state_dict = load_state_dict(os.path.join(CKPT_SD15_DIR, sd_ckpt), location='cpu')
     model.load_state_dict(state_dict, strict=False)  # noqa
     del state_dict
 
 
 def load_state_dict_cn(cn_ckpt):
     global model
-    state_dict = load_state_dict(os.path.join(CKPT_DIR, cn_ckpt), location='cpu')
+    state_dict = load_state_dict(os.path.join(CKPT_BASECN_DIR, cn_ckpt), location='cpu')
     state_dict = {k: v for k, v in state_dict.items() if k.startswith('control_model')}
     model.load_state_dict(state_dict, strict=False)  # noqa
     del state_dict
@@ -45,63 +48,84 @@ def load_state_dict_cn(cn_ckpt):
 
 def load_state_dict_lora(lora_ckpt):
     global model
-    state_dict = load_state_dict(os.path.join(CKPT_DIR, lora_ckpt), location='cpu')
+    state_dict = load_state_dict(os.path.join(CKPT_LORAS_DIR, lora_ckpt), location='cpu')
     state_dict = {k: v for k, v in state_dict.items() if 'lora_layer' in k or 'zero_convs' in k or 'middle_block_out' in k or 'norm' in k}
     model.load_state_dict(state_dict, strict=False)  # noqa
     del state_dict
 
 
-def process(det, input_image, prompt, a_prompt, n_prompt, num_samples, image_resolution, detect_resolution, ddim_steps, guess_mode, strength, scale, seed, eta, sd_ckpt, cn_ckpt, lora_ckpt):
-    global model, ddim_sampler, last_ckpts, last_config
-
-    preprocessor = None
-    params = dict()
+def detect(det, input_image, detect_resolution, image_resolution):
     if det == 'none':
         preprocessor = None
-    elif det == 'grayscale':
+        params = dict()
+    elif det in ['grayscale', 'grayscale_with_color_prompt']:
         from annotator.grayscale import GrayscaleConverter
-        if not isinstance(preprocessor, GrayscaleConverter):
-            preprocessor = GrayscaleConverter()
+        preprocessor = GrayscaleConverter()
+        params = dict()
     elif det in ['lineart', 'lineart(coarse)']:
         from annotator.lineart import LineartDetector
-        if not isinstance(preprocessor, LineartDetector):
-            preprocessor = LineartDetector()
+        preprocessor = LineartDetector()
         params = dict(coarse=(det == 'lineart(coarse)'))
     elif det == 'lineart_anime':
         from annotator.lineart_anime import LineartAnimeDetector
-        if not isinstance(preprocessor, LineartAnimeDetector):
-            preprocessor = LineartAnimeDetector()
+        preprocessor = LineartAnimeDetector()
+        params = dict()
     elif det == 'shuffle':
         from annotator.shuffle import ContentShuffleDetector
-        if not isinstance(preprocessor, ContentShuffleDetector):
-            preprocessor = ContentShuffleDetector()
+        preprocessor = ContentShuffleDetector()
+        params = dict()
     elif det == 'mlsd':
         from annotator.mlsd import MLSDdetector
-        if not isinstance(preprocessor, MLSDdetector):
-            preprocessor = MLSDdetector()
+        preprocessor = MLSDdetector()
         thr_v = np.random.rand() * 1.9 + 0.1  # [0.1, 2.0]
         thr_d = np.random.rand() * 19.9 + 0.1  # [0.1, 20.0]
         params = dict(thr_v=thr_v, thr_d=thr_d)
     elif det == 'palette':
         from annotator.palette import PaletteDetector
-        if not isinstance(preprocessor, PaletteDetector):
-            preprocessor = PaletteDetector()
+        preprocessor = PaletteDetector()
+        params = dict()
     elif det == 'pixel':
         from annotator.pixel import Pixelater
-        if not isinstance(preprocessor, Pixelater):
-            preprocessor = Pixelater()
+        preprocessor = Pixelater()
         n_colors = np.random.randint(8, 17)  # [8,16] -> 3-4 bits
         scale = np.random.randint(4, 9)  # [4,8]
         params = dict(n_colors=n_colors, scale=scale)
     elif det == 'pixel2':
         from annotator.pixel import Pixelater
-        if not isinstance(preprocessor, Pixelater):
-            preprocessor = Pixelater()
+        preprocessor = Pixelater()
         n_colors = np.random.randint(8, 17)  # [8,16] -> 3-4 bits
         scale = np.random.randint(4, 9)  # [4,8]
         params = dict(n_colors=n_colors, scale=scale, down_interpolation=cv2.INTER_LANCZOS4)
     else:
         raise ValueError('Unknown preprocessor')
+
+    if isinstance(input_image, dict):
+        input_image = input_image['composite']
+
+    with torch.no_grad():
+        input_image = HWC3(input_image)
+        if preprocessor is not None:
+            resized_image = resize_image(input_image, detect_resolution)
+            detected_map = preprocessor(resized_image, **params)
+        else:
+            detected_map = input_image
+        detected_map = HWC3(detected_map)
+        H, W, C = resize_image(input_image, image_resolution).shape
+        detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
+    return detected_map
+
+
+def process(det, detected_image, prompt, a_prompt, n_prompt, num_samples, ddim_steps, guess_mode, strength, scale, seed, eta, sd_ckpt, cn_ckpt, lora_ckpt):
+    global model, ddim_sampler, last_ckpts, last_config
+
+    if isinstance(detected_image, dict):
+        if det == 'grayscale_with_color_prompt':
+            yuv_bg = cv2.cvtColor(HWC3(detected_image['background']), cv2.COLOR_RGB2YUV)
+            yuv_cp = cv2.cvtColor(HWC3(detected_image['composite']), cv2.COLOR_RGB2YUV)
+            yuv_cp[:, :, 0] = yuv_bg[:, :, 0]
+            detected_image = cv2.cvtColor(yuv_cp, cv2.COLOR_YUV2RGB)
+        else:
+            detected_image = detected_image['composite']
 
     assert sd_ckpt is not None
     assert cn_ckpt is not None
@@ -127,21 +151,10 @@ def process(det, input_image, prompt, a_prompt, n_prompt, num_samples, image_res
         print(f'Checkpoints loaded')
 
     with torch.no_grad():
-        input_image = HWC3(input_image)
+        detected_image = HWC3(detected_image)
+        H, W, C = detected_image.shape
 
-        if det == 'none':
-            detected_map = input_image.copy()
-        else:
-            resized_image = resize_image(input_image, detect_resolution)
-            detected_map = preprocessor(resized_image, **params)
-            detected_map = HWC3(detected_map)
-
-        img = resize_image(input_image, image_resolution)
-        H, W, C = img.shape
-
-        detected_map = cv2.resize(detected_map, (W, H), interpolation=cv2.INTER_LINEAR)
-
-        control = torch.from_numpy(detected_map.copy()).float().cuda() / 255.0
+        control = torch.from_numpy(detected_image.copy()).float().cuda() / 255.0
         control = torch.stack([control for _ in range(num_samples)], dim=0)
         control = einops.rearrange(control, 'b h w c -> b c h w').clone()
 
@@ -174,7 +187,7 @@ def process(det, input_image, prompt, a_prompt, n_prompt, num_samples, image_res
         x_samples = (einops.rearrange(x_samples, 'b c h w -> b h w c') * 127.5 + 127.5).cpu().numpy().clip(0, 255).astype(np.uint8)
 
         results = [x_samples[i] for i in range(num_samples)]
-    return [detected_map] + results
+    return [detected_image] + results
 
 
 def main():
@@ -183,22 +196,25 @@ def main():
         with gr.Row():
             gr.Markdown("## CtrLoRA")
         with gr.Row():
-            ckpts = sorted(os.listdir(CKPT_DIR))
-            sd_ckpt = gr.Dropdown(label='Select stable diffusion checkpoint', choices=ckpts, value='v1-5-pruned.ckpt')
-            cn_ckpt = gr.Dropdown(label='Select base controlnet checkpoint', choices=ckpts)
-            lora_ckpt = gr.Dropdown(label='Select lora checkpoint', choices=ckpts)
+            sd_ckpt = gr.Dropdown(label='Select stable diffusion checkpoint', choices=sorted(os.listdir(CKPT_SD15_DIR)), value='v1-5-pruned.ckpt')
+            cn_ckpt = gr.Dropdown(label='Select base controlnet checkpoint', choices=sorted(os.listdir(CKPT_BASECN_DIR)))
+            lora_ckpt = gr.Dropdown(label='Select lora checkpoint', choices=sorted(os.listdir(CKPT_LORAS_DIR)))
         with gr.Row():
-            with gr.Column():
-                input_image = gr.Image(sources=['upload'], type="numpy")
+            with gr.Column(scale=2):
+                with gr.Row():
+                    input_image = gr.ImageEditor(sources=['upload', 'clipboard'], type="numpy")
+                    detected_image = gr.ImageEditor(sources=['upload', 'clipboard'], type="numpy")
                 prompt = gr.Textbox(label="Prompt")
                 num_samples = gr.Slider(label="Images", minimum=1, maximum=12, value=1, step=1)
                 seed = gr.Slider(label="Seed", minimum=-1, maximum=2147483647, step=1, value=12345)
                 det = gr.Radio(choices=[
                     'none', 'grayscale',
                     'lineart', 'lineart(coarse)', 'lineart_anime', 'shuffle', 'mlsd',
-                    'palette', 'pixel', 'pixel2',
+                    'palette', 'pixel', 'pixel2', 'grayscale_with_color_prompt',
                 ], type="value", value="none", label="Preprocessor")
-                run_button = gr.Button(value="Run")
+                with gr.Row():
+                    detect_button = gr.Button(value="Detect")
+                    run_button = gr.Button(value="Run")
                 with gr.Accordion("Advanced options", open=False):
                     image_resolution = gr.Slider(label="Image Resolution", minimum=256, maximum=768, value=512, step=64)
                     strength = gr.Slider(label="Control Strength", minimum=0.0, maximum=2.0, value=1.0, step=0.01)
@@ -209,9 +225,10 @@ def main():
                     eta = gr.Slider(label="DDIM ETA", minimum=0.0, maximum=1.0, value=0.0, step=0.01)
                     a_prompt = gr.Textbox(label="Added Prompt", value='best quality')
                     n_prompt = gr.Textbox(label="Negative Prompt", value='lowres, bad anatomy, bad hands, cropped, worst quality')
-            with gr.Column():
+            with gr.Column(scale=1):
                 result_gallery = gr.Gallery(label='Output', show_label=False, elem_id="gallery")
-        ips = [det, input_image, prompt, a_prompt, n_prompt, num_samples, image_resolution, detect_resolution, ddim_steps, guess_mode, strength, scale, seed, eta, sd_ckpt, cn_ckpt, lora_ckpt]
+        detect_button.click(fn=detect, inputs=[det, input_image, detect_resolution, image_resolution], outputs=[detected_image])
+        ips = [det, detected_image, prompt, a_prompt, n_prompt, num_samples, ddim_steps, guess_mode, strength, scale, seed, eta, sd_ckpt, cn_ckpt, lora_ckpt]
         run_button.click(fn=process, inputs=ips, outputs=[result_gallery])
 
     block.launch(server_name='0.0.0.0')

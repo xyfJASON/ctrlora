@@ -20,7 +20,7 @@ def get_parser():
     parser.add_argument("--output_dir", type=str, required=True)
     parser.add_argument("--detector", type=str, choices=[
         'jpeg', 'palette', 'pixel', 'pixel2', 'blur', 'grayscale', 'inpainting',
-        'lineart', 'lineart_anime', 'shuffle', 'mlsd',
+        'lineart', 'lineart_anime', 'shuffle', 'mlsd', 'grayscale_with_color_prompt',
     ], required=True)
     parser.add_argument('--n_processes', type=int, default=1)
     return parser
@@ -81,6 +81,8 @@ def func(file):
         params = dict(thr_v=thr_v, thr_d=thr_d)
 
     img = detector(img, **params)
+    if img is None:
+        return
     img = HWC3(img)
     img = Image.fromarray(img)
     img.save(os.path.join(args.output_dir, file))
@@ -123,6 +125,9 @@ if __name__ == '__main__':
     elif args.detector == 'mlsd':
         from annotator.mlsd import MLSDdetector
         detector = MLSDdetector()
+    elif args.detector == 'grayscale_with_color_prompt':
+        from annotator.grayscale_with_color_prompt import GrayscaleWithColorPromptConverter
+        detector = GrayscaleWithColorPromptConverter()
     else:
         raise NotImplementedError
 

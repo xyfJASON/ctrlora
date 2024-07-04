@@ -133,7 +133,7 @@ So now the dataset can be used just like a custom dataset.
 
 ### MultiGen-20M
 
-Please download the dataset from [here](https://console.cloud.google.com/storage/browser/sfr-unicontrol-data-research/dataset) and unzip it to `./data/MultiGen-20M`. The files should be organized as follows:
+MultiGen-20M is a large image-prompt-condition dataset proposed by [UniControl](https://github.com/salesforce/UniControl). Please download the dataset from [here](https://console.cloud.google.com/storage/browser/sfr-unicontrol-data-research/dataset) and unzip it to `./data/MultiGen-20M`. The files should be organized as follows:
 
 ```
 data
@@ -171,6 +171,8 @@ python scripts/tool_make_control_init.py --config ./configs/cldm_v15.yaml --sd_c
 
 <br/>
 
+
+
 ## Pretrain the Base ControlNet
 
 ```shell
@@ -203,7 +205,7 @@ Arguments related to training:
 
 - `--lr`: Optional. Learning rate. Default: `1e-5`.
 - `--bs`: Optional. Batch size on each process. Default: `4`.
-- `--max_steps`: Optional. Maximum number of training steps. Default: `800000`.
+- `--max_steps`: Optional. Maximum number of training steps. Default: `700000`.
 - `--gradacc`: Optional. Gradient accumulation. Default: `1`.
 - `--precision`: Optional. Precision. Default: `32`.
 - `--save_memory`: Optional. Save memory by using sliced attention. Default: `False`.
@@ -212,11 +214,15 @@ Arguments related to training:
 
 The training logs and checkpoints will be saved to `./lightning_logs/version_xxx/`.
 
-For example, to train BaseControlNet-9tasks-800ksteps with 8 RTX 4090 GPUs and a total batch size of 32:
+For example, to train BaseControlNet-9tasks-700ksteps with 8 RTX 4090 GPUs and a total batch size of 32:
 
 ```shell
-python scripts/train_ctrlora_pretrain.py --dataroot ./data/MultiGen-20M --config ./configs/ctrlora_pretrain_sd15_9tasks_rank128.yaml --sd_ckpt ./ckpts/v1-5-pruned.ckpt --cn_ckpt ./ckpts/control_sd15_init.pth --bs 2 --gradacc 2 --save_memory --max_steps 800000
+python scripts/train_ctrlora_pretrain.py --dataroot ./data/MultiGen-20M --config ./configs/ctrlora_pretrain_sd15_9tasks_rank128.yaml --sd_ckpt ./ckpts/v1-5-pruned.ckpt --cn_ckpt ./ckpts/control_sd15_init.pth --bs 1 --gradacc 4 --save_memory --max_steps 700000
 ```
+
+<br/>
+
+
 
 ## Finetune the Base ControlNet (with lora or full-params)
 
