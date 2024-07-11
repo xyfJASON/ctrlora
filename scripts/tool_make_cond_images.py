@@ -19,6 +19,7 @@ def get_parser():
     parser.add_argument("--source_dir", type=str, required=True)
     parser.add_argument("--detector", type=str, choices=[
         'jpeg', 'palette', 'pixel', 'pixel2', 'blur', 'grayscale', 'inpainting',
+        'lineart', 'lineart_anime', 'shuffle', 'mlsd',
     ], required=True)
     parser.add_argument('--n_processes', type=int, default=4)
     return parser
@@ -70,6 +71,13 @@ def func(file):
         n_colors = np.random.randint(8, 17)  # [8,16] -> 3-4 bits
         scale = np.random.randint(4, 9)  # [4,8]
         params = dict(n_colors=n_colors, scale=scale, down_interpolation=cv2.INTER_LANCZOS4)
+    elif args.detector == 'lineart':
+        coarse = np.random.rand() > 0.5
+        params = dict(coarse=coarse)
+    elif args.detector == 'mlsd':
+        thr_v = np.random.rand() * 1.9 + 0.1  # [0.1, 2.0]
+        thr_d = np.random.rand() * 19.9 + 0.1  # [0.1, 20.0]
+        params = dict(thr_v=thr_v, thr_d=thr_d)
 
     img = detector(img, **params)
     img = HWC3(img)
@@ -102,6 +110,18 @@ if __name__ == '__main__':
     elif args.detector == 'inpainting':
         from annotator.inpainting import Inpainter
         detector = Inpainter()
+    elif args.detector == 'lineart':
+        from annotator.lineart import LineartDetector
+        detector = LineartDetector()
+    elif args.detector == 'lineart_anime':
+        from annotator.lineart_anime import LineartAnimeDetector
+        detector = LineartAnimeDetector()
+    elif args.detector == 'shuffle':
+        from annotator.shuffle import ContentShuffleDetector
+        detector = ContentShuffleDetector()
+    elif args.detector == 'mlsd':
+        from annotator.mlsd import MLSDdetector
+        detector = MLSDdetector()
     else:
         raise NotImplementedError
 
@@ -109,12 +129,22 @@ if __name__ == '__main__':
     target_dir = f"{args.source_dir}-{args.detector}"
     os.makedirs(target_dir, exist_ok=True)
 
-    # Multiprocessing
-    mp.set_start_method('fork')
-    pool = mp.Pool(processes=args.n_processes)
-    files = os.listdir(args.source_dir)
-    for _ in tqdm.tqdm(pool.imap(func, files), total=len(files)):
-        pass
-    pool.close()
-    pool.join()
+    if args.n_processes == 1:
+        # Single process
+        files = os.listdir(args.source_dir)
+        for file in tqdm.tqdm(files):
+            func(file)
+
+    else:
+        if args.detector in ['lineart']:
+            raise ValueError(f'{args.detector} detector is not compatible with multiprocessing, please pass --n_processes=1')
+        # Multiprocessing
+        mp.set_start_method('fork')
+        pool = mp.Pool(processes=args.n_processes)
+        files = os.listdir(args.source_dir)
+        for _ in tqdm.tqdm(pool.imap(func, files), total=len(files)):
+            pass
+        pool.close()
+        pool.join()
+
     print('Done')

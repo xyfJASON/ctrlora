@@ -30,6 +30,7 @@ if __name__ == "__main__":
     parser.add_argument("--task", type=str, choices=[
         'hed', 'canny', 'seg', 'depth', 'normal', 'openpose', 'hedsketch',
         'bbox', 'outpainting', 'inpainting', 'blur', 'grayscale',
+        'lineart', 'lineart_anime', 'shuffle', 'mlsd',
         'jpeg', 'palette', 'pixel', 'pixel2',
     ], help='task name')
     # Model configs
