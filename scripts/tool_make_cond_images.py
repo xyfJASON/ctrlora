@@ -132,11 +132,11 @@ if __name__ == '__main__':
     if args.n_processes == 1:
         # Single process
         files = os.listdir(args.source_dir)
-        for file in tqdm.tqdm(files):
-            func(file)
+        for f in tqdm.tqdm(files):
+            func(f)
 
     else:
-        if args.detector in ['lineart']:
+        if args.detector in ['lineart', 'lineart_anime']:
             raise ValueError(f'{args.detector} detector is not compatible with multiprocessing, please pass --n_processes=1')
         # Multiprocessing
         mp.set_start_method('fork')
