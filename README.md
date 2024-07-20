@@ -29,7 +29,107 @@ pip install -r requirements.txt
 
 <br/>
 
+
+
 ## Datasets Preparation
+
+### Custom dataset
+
+Please put your custom data under `./data/custom_data_name` and organize it in the following structure:
+
+```
+data
+└── custom_data_name
+    ├── prompt.json
+    ├── source
+    │   ├── 0000.jpg
+    │   ├── 0001.jpg
+    │   └── ...
+    └── target
+        ├── 0000.jpg
+        ├── 0001.jpg
+        └── ...
+```
+
+- `source` contains condition images, such as canny edges, segmentation maps, depth images, etc.
+- `target` contains ground-truth images corresponding to the condition images.
+- Each line in `prompt.json` should follow the following format: `{"source": "source/0000.jpg", "target": "target/0000.jpg", "prompt": "The quick brown fox jumps over the lazy dog."}`.
+
+
+
+### COCO 2017
+
+Please download the training set (`train2017.zip`), validation set (`val2017.zip`) and annotations file (`annotations_trainval2017.zip`) from [here](https://cocodataset.org/#download). 
+Unzip and organize the files as follows:
+
+```
+data
+└── coco
+    ├── annotations
+    │   ├── captions_train2017.json
+    │   └── captions_val2017.json
+    ├── train2017
+    │   ├── 000000000009.jpg
+    │   ├── 000000000025.jpg
+    │   └── ...
+    └── val2017
+        ├── 000000000139.jpg
+        ├── 000000000285.jpg
+        └── ...
+```
+
+Then, run the following commands to process the data:
+
+```shell
+python scripts/tool_resize_images.py --source ./data/coco/train2017 --target ./data/coco/train2017-resized
+python scripts/tool_resize_images.py --source ./data/coco/val2017 --target ./data/coco/val2017-resized
+python scripts/tool_get_prompt_coco.py --ann_file ./data/coco/annotations/captions_train2017.json --save_path ./data/coco/prompt-train.json
+python scripts/tool_get_prompt_coco.py --ann_file ./data/coco/annotations/captions_val2017.json --save_path ./data/coco/prompt-val.json
+```
+
+After processing, the files should look like this:
+
+```
+data
+└── coco
+    ├── prompt-train.json
+    ├── prompt-val.json
+    ├── train2017-resized  (contains 118287 images)
+    ├── val2017-resized    (contains 5000 images)
+    └── ...
+```
+
+To use the coco dataset for training / evaluation, we need to organize it into the structure of a custom dataset. 
+It is recommended to create symbolic links so that you don't need to copy the images.
+
+Take `lineart` as an example:
+
+```shell
+mkdir ./data/coco-lineart-train
+ln -s $(pwd)/data/coco/prompt-train.json ./data/coco-lineart-train/prompt.json
+ln -s $(pwd)/data/coco/train2017-resized ./data/coco-lineart-train/target
+python scripts/tool_make_cond_images.py --input_dir ./data/coco-lineart-train/target --output_dir ./data/coco-lineart-train/source --detector lineart
+```
+
+After running the above commands, the files should look like this:
+
+```
+data
+└── coco-lineart-train
+    ├── prompt.json (symbolic link)
+    ├── source
+    │   ├── 000000000009.jpg
+    │   ├── 000000000025.jpg
+    │   └── ...
+    └── target (symbolic link)
+        ├── 000000000009.jpg
+        ├── 000000000025.jpg
+        └── ...
+```
+
+So now the dataset can be used just like a custom dataset.
+
+
 
 ### MultiGen-20M
 
@@ -56,6 +156,7 @@ data
 ```
 
 <br/>
+
 
 
 ## Checkpoints Preparation
@@ -117,14 +218,13 @@ For example, to train BaseControlNet-9tasks-800ksteps with 8 RTX 4090 GPUs and a
 python scripts/train_ctrlora_pretrain.py --dataroot ./data/MultiGen-20M --config ./configs/ctrlora_pretrain_sd15_9tasks_rank128.yaml --sd_ckpt ./ckpts/v1-5-pruned.ckpt --cn_ckpt ./ckpts/control_sd15_init.pth --bs 2 --gradacc 2 --save_memory --max_steps 800000
 ```
 
-## Finetune the Base ControlNet (full-params or with lora)
+## Finetune the Base ControlNet (with lora or full-params)
 
 ```shell
 python scripts/train_ctrlora_finetune.py \
     --dataroot DATAROOT \
     [--drop_rate DROP_RATE] \
     [--multigen20m] \
-    [--coco] \
     [--task TASK] \
     --config CONFIG \
     --sd_ckpt SD_CKPT \
@@ -151,13 +251,6 @@ Arguments related to MultiGen-20M dataset:
 - `--drop_rate`: Optional. Drop rate for classifier-free guidance. Default: 0.3.
 - `--task`: Task to train on. Choices: `{'hed', 'canny', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'bbox', 'outpainting', 'inpainting', 'blur', 'grayscale'}`.
 
-Arguments related to COCO dataset:
-
-- `--coco`: Set this flag to use COCO.
-- `--dataroot`: Path to the COCO dataset, e.g., `./data/coco`.
-- `--drop_rate`: Optional. Drop rate for classifier-free guidance. Default: 0.3.
-- `--task`: Task to train on. Choices: `{'jpeg', 'palette', 'depth', 'inpainting', 'blur', 'grayscale'}`.
-
 Arguments related to model:
 
 - `--config`: Path to the config file, e.g., `./configs/ctrlora_finetune_sd15_rank128.yaml`.
@@ -179,12 +272,13 @@ The training logs and checkpoints will be saved to `./lightning_logs/version_xxx
 
 <br/>
 
+
+
 ## Sample images
 
 ```shell
 python sample.py --dataroot DATAROOT \
                  [--multigen20m] \
-                 [--coco] \
                  [--task TASK] \
                  --config CONFIG \
                  --ckpt CKPT \
@@ -205,12 +299,6 @@ Arguments related to MultiGen-20M dataset:
 - `--multigen20m`: Set this flag to use MultiGen-20M.
 - `--dataroot`: Path to the MultiGen-20M dataset, e.g., `./data/MultiGen-20M`.
 - `--task`: Task to test on. Choices: `{'hed', 'canny', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'bbox', 'outpainting', 'inpainting', 'blur', 'grayscale'}`.
-
-Arguments related to COCO dataset:
-
-- `--coco`: Set this flag to use COCO.
-- `--dataroot`: Path to the COCO dataset, e.g., `./data/coco`.
-- `--task`: Task to test on. Choices: `{'jpeg', 'palette', 'depth', 'inpainting', 'blur', 'grayscale'}`.
 
 Arguments related to model:
 

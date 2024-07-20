@@ -16,7 +16,6 @@ from annotator.util import HWC3, resize_image
 from cldm.model import create_model, load_state_dict
 from cldm.ddim_hacked import DDIMSampler
 from cldm.cldm_ctrlora_pretrain import ControlPretrainLDM
-from datasets.coco import COCO
 from datasets.multigen20m import MultiGen20M
 from datasets.custom_dataset import CustomDataset
 
@@ -26,12 +25,9 @@ if __name__ == "__main__":
     # Dataset configs
     parser.add_argument("--dataroot", type=str, required=True, help='path to dataset')
     parser.add_argument("--multigen20m", action='store_true', default=False, help='use multigen20m dataset')
-    parser.add_argument("--coco", action='store_true', default=False, help='use coco dataset')
     parser.add_argument("--task", type=str, choices=[
         'hed', 'canny', 'seg', 'depth', 'normal', 'openpose', 'hedsketch',
         'bbox', 'outpainting', 'inpainting', 'blur', 'grayscale',
-        'lineart', 'lineart_anime', 'shuffle', 'mlsd',
-        'jpeg', 'palette', 'pixel', 'pixel2',
     ], help='task name')
     # Model configs
     parser.add_argument("--config", type=str, required=True, help='path to model config file')
@@ -51,8 +47,6 @@ if __name__ == "__main__":
             path_json=os.path.join(args.dataroot, 'json_files', f'aesthetics_plus_all_group_{args.task}_all.json'),
             path_meta=args.dataroot, task=args.task, drop_rate=0.0, random_cropping=False,
         )
-    elif args.coco:
-        dataset = COCO(root=args.dataroot, split='val', cond=args.task)
     else:
         dataset = CustomDataset(args.dataroot)
     if args.n_samples < len(dataset):

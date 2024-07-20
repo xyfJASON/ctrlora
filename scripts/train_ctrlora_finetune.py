@@ -11,7 +11,6 @@ import torch
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 
-from datasets.coco import COCO
 from datasets.multigen20m import MultiGen20M
 from datasets.custom_dataset import CustomDataset
 from cldm.logger import ImageLogger, CheckpointEveryNSteps
@@ -25,12 +24,9 @@ if __name__ == "__main__":
     parser.add_argument("--dataroot", type=str, required=True, help='path to dataset')
     parser.add_argument("--drop_rate", type=float, default=0.3, help='drop rate for classifier-free guidance')
     parser.add_argument("--multigen20m", action='store_true', default=False, help='use multigen20m dataset')
-    parser.add_argument("--coco", action='store_true', default=False, help='use coco dataset')
     parser.add_argument("--task", type=str, choices=[
         'hed', 'canny', 'seg', 'depth', 'normal', 'openpose', 'hedsketch',
         'bbox', 'outpainting', 'inpainting', 'blur', 'grayscale',
-        'lineart', 'lineart_anime', 'shuffle', 'mlsd',
-        'jpeg', 'palette', 'pixel', 'pixel2',
     ], help='task name')
     # Model configs
     parser.add_argument("--config", type=str, required=True, help='path to model config file')
@@ -57,8 +53,6 @@ if __name__ == "__main__":
             path_json=os.path.join(args.dataroot, 'json_files', f'aesthetics_plus_all_group_{args.task}_all.json'),
             path_meta=args.dataroot, task=args.task, drop_rate=args.drop_rate,
         )
-    elif args.coco:
-        dataset = COCO(root=args.dataroot, split='train', cond=args.task, drop_rate=args.drop_rate)
     else:
         dataset = CustomDataset(args.dataroot, drop_rate=args.drop_rate)
     dataloader = DataLoader(dataset, num_workers=16, batch_size=args.bs, shuffle=True)

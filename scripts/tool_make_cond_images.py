@@ -16,12 +16,13 @@ from annotator.util import HWC3, resize_image
 
 def get_parser():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--source_dir", type=str, required=True)
+    parser.add_argument("--input_dir", type=str, required=True)
+    parser.add_argument("--output_dir", type=str, required=True)
     parser.add_argument("--detector", type=str, choices=[
         'jpeg', 'palette', 'pixel', 'pixel2', 'blur', 'grayscale', 'inpainting',
         'lineart', 'lineart_anime', 'shuffle', 'mlsd',
     ], required=True)
-    parser.add_argument('--n_processes', type=int, default=4)
+    parser.add_argument('--n_processes', type=int, default=1)
     return parser
 
 
@@ -41,7 +42,7 @@ def set_seed_by_hash(obj_id):
 def func(file):
     set_seed_by_hash(file)
 
-    img = Image.open(os.path.join(args.source_dir, file))
+    img = Image.open(os.path.join(args.input_dir, file))
     img = np.array(img)
     img = resize_image(HWC3(img), 512)
 
@@ -82,7 +83,7 @@ def func(file):
     img = detector(img, **params)
     img = HWC3(img)
     img = Image.fromarray(img)
-    img.save(os.path.join(target_dir, file))
+    img.save(os.path.join(args.output_dir, file))
 
 
 if __name__ == '__main__':
@@ -125,13 +126,11 @@ if __name__ == '__main__':
     else:
         raise NotImplementedError
 
-    # Create target directory
-    target_dir = f"{args.source_dir}-{args.detector}"
-    os.makedirs(target_dir, exist_ok=True)
+    os.makedirs(args.output_dir, exist_ok=True)
 
     if args.n_processes == 1:
         # Single process
-        files = os.listdir(args.source_dir)
+        files = os.listdir(args.input_dir)
         for f in tqdm.tqdm(files):
             func(f)
 
@@ -141,7 +140,7 @@ if __name__ == '__main__':
         # Multiprocessing
         mp.set_start_method('fork')
         pool = mp.Pool(processes=args.n_processes)
-        files = os.listdir(args.source_dir)
+        files = os.listdir(args.input_dir)
         for _ in tqdm.tqdm(pool.imap(func, files), total=len(files)):
             pass
         pool.close()
