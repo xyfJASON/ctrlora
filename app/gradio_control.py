@@ -58,7 +58,7 @@ def detect(det, input_image, detect_resolution, image_resolution):
     if det == 'none':
         preprocessor = None
         params = dict()
-    elif det in ['grayscale', 'grayscale_with_color_prompt']:
+    elif det in ['grayscale', 'grayscale_with_color_prompt', 'grayscale_with_color_brush']:
         from annotator.grayscale import GrayscaleConverter
         preprocessor = GrayscaleConverter()
         params = dict()
@@ -119,7 +119,7 @@ def process(det, detected_image, prompt, a_prompt, n_prompt, num_samples, ddim_s
     global model, ddim_sampler, last_ckpts, last_config
 
     if isinstance(detected_image, dict):
-        if det == 'grayscale_with_color_prompt':
+        if det in ['grayscale_with_color_prompt', 'grayscale_with_color_brush']:
             yuv_bg = cv2.cvtColor(HWC3(detected_image['background']), cv2.COLOR_RGB2YUV)
             yuv_cp = cv2.cvtColor(HWC3(detected_image['composite']), cv2.COLOR_RGB2YUV)
             yuv_cp[:, :, 0] = yuv_bg[:, :, 0]
@@ -210,7 +210,7 @@ def main():
                 det = gr.Radio(choices=[
                     'none', 'grayscale',
                     'lineart', 'lineart(coarse)', 'lineart_anime', 'shuffle', 'mlsd',
-                    'palette', 'pixel', 'pixel2', 'grayscale_with_color_prompt',
+                    'palette', 'pixel', 'pixel2', 'grayscale_with_color_prompt', 'grayscale_with_color_brush',
                 ], type="value", value="none", label="Preprocessor")
                 with gr.Row():
                     detect_button = gr.Button(value="Detect")

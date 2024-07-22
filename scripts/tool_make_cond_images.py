@@ -20,7 +20,7 @@ def get_parser():
     parser.add_argument("--output_dir", type=str, required=True)
     parser.add_argument("--detector", type=str, choices=[
         'jpeg', 'palette', 'pixel', 'pixel2', 'blur', 'grayscale', 'inpainting',
-        'lineart', 'lineart_anime', 'shuffle', 'mlsd', 'grayscale_with_color_prompt',
+        'lineart', 'lineart_anime', 'shuffle', 'mlsd', 'grayscale_with_color_prompt', 'grayscale_with_color_brush',
     ], required=True)
     parser.add_argument('--n_processes', type=int, default=1)
     return parser
@@ -128,6 +128,9 @@ if __name__ == '__main__':
     elif args.detector == 'grayscale_with_color_prompt':
         from annotator.grayscale_with_color_prompt import GrayscaleWithColorPromptConverter
         detector = GrayscaleWithColorPromptConverter()
+    elif args.detector == 'grayscale_with_color_brush':
+        from annotator.grayscale_with_color_brush import GrayscaleWithColorBrushConverter
+        detector = GrayscaleWithColorBrushConverter()
     else:
         raise NotImplementedError
 
