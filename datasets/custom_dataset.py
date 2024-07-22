@@ -39,8 +39,8 @@ class CustomDataset(Dataset):
             raise FileNotFoundError(f"{os.path.join(root, 'target')} not found.")
 
         self.data = []
-        source_files = os.listdir(os.path.join(root, 'source'))
-        target_files = os.listdir(os.path.join(root, 'target'))
+        source_files = set(os.listdir(os.path.join(root, 'source')))
+        target_files = set(os.listdir(os.path.join(root, 'target')))
         with open(os.path.join(root, 'prompt.json'), 'rt') as f:
             for line in f:
                 data = json.loads(line)
