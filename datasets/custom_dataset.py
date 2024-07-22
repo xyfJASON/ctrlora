@@ -30,7 +30,6 @@ class CustomDataset(Dataset):
         self.root = root
         self.drop_rate = drop_rate
 
-        self.data = []
         root = os.path.expanduser(root)
         if not os.path.isfile(os.path.join(root, 'prompt.json')):
             raise FileNotFoundError(f"{os.path.join(root, 'prompt.json')} not found.")
@@ -38,9 +37,19 @@ class CustomDataset(Dataset):
             raise FileNotFoundError(f"{os.path.join(root, 'source')} not found.")
         if not os.path.isdir(os.path.join(root, 'target')):
             raise FileNotFoundError(f"{os.path.join(root, 'target')} not found.")
+
+        self.data = []
+        source_files = os.listdir(os.path.join(root, 'source'))
+        target_files = os.listdir(os.path.join(root, 'target'))
         with open(os.path.join(root, 'prompt.json'), 'rt') as f:
             for line in f:
-                self.data.append(json.loads(line))
+                data = json.loads(line)
+                if data['source'].lstrip('source/') not in source_files:
+                    continue
+                if data['target'].lstrip('target/') not in target_files:
+                    continue
+                self.data.append(data)
+        del source_files, target_files
 
     def __len__(self):
         return len(self.data)
