@@ -66,7 +66,7 @@ def detect(det, input_image, detect_resolution, image_resolution):
         from annotator.lineart import LineartDetector
         preprocessor = LineartDetector()
         params = dict(coarse=(det == 'lineart(coarse)'))
-    elif det == 'lineart_anime':
+    elif det in ['lineart_anime', 'lineart_anime_with_color_prompt']:
         from annotator.lineart_anime import LineartAnimeDetector
         preprocessor = LineartAnimeDetector()
         params = dict()
@@ -210,7 +210,8 @@ def main():
                 det = gr.Radio(choices=[
                     'none', 'grayscale',
                     'lineart', 'lineart(coarse)', 'lineart_anime', 'shuffle', 'mlsd',
-                    'palette', 'pixel', 'pixel2', 'grayscale_with_color_prompt', 'grayscale_with_color_brush',
+                    'palette', 'pixel', 'pixel2', 'grayscale_with_color_prompt',
+                    'grayscale_with_color_brush', 'lineart_anime_with_color_prompt',
                 ], type="value", value="none", label="Preprocessor")
                 with gr.Row():
                     detect_button = gr.Button(value="Detect")

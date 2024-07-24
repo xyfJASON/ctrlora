@@ -20,7 +20,8 @@ def get_parser():
     parser.add_argument("--output_dir", type=str, required=True)
     parser.add_argument("--detector", type=str, choices=[
         'jpeg', 'palette', 'pixel', 'pixel2', 'blur', 'grayscale', 'inpainting',
-        'lineart', 'lineart_anime', 'shuffle', 'mlsd', 'grayscale_with_color_prompt', 'grayscale_with_color_brush',
+        'lineart', 'lineart_anime', 'shuffle', 'mlsd', 'grayscale_with_color_prompt',
+        'grayscale_with_color_brush', 'lineart_anime_with_color_prompt',
     ], required=True)
     parser.add_argument('--n_processes', type=int, default=1)
     return parser
@@ -131,6 +132,9 @@ if __name__ == '__main__':
     elif args.detector == 'grayscale_with_color_brush':
         from annotator.grayscale_with_color_brush import GrayscaleWithColorBrushConverter
         detector = GrayscaleWithColorBrushConverter()
+    elif args.detector == 'lineart_anime_with_color_prompt':
+        from annotator.lineart_anime_with_color_prompt import LineartAnimeWithColorPromptConverter
+        detector = LineartAnimeWithColorPromptConverter()
     else:
         raise NotImplementedError
 
@@ -143,7 +147,7 @@ if __name__ == '__main__':
             func(f)
 
     else:
-        if args.detector in ['lineart', 'lineart_anime']:
+        if args.detector in ['lineart', 'lineart_anime', 'lineart_anime_with_color_prompt']:
             raise ValueError(f'{args.detector} detector is not compatible with multiprocessing, please pass --n_processes=1')
         # Multiprocessing
         mp.set_start_method('fork')
