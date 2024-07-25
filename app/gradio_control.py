@@ -90,7 +90,7 @@ def detect(det, input_image, detect_resolution, image_resolution):
         if not isinstance(preprocessor, HEDSketchDetector):
             preprocessor = HEDSketchDetector()
         params = dict()
-    elif det == 'grayscale':
+    elif det in ['grayscale', 'grayscale_with_color_prompt', 'grayscale_with_color_brush']:
         from annotator.grayscale import GrayscaleConverter
         if not isinstance(preprocessor, GrayscaleConverter):
             preprocessor = GrayscaleConverter()
@@ -108,7 +108,7 @@ def detect(det, input_image, detect_resolution, image_resolution):
         if not isinstance(preprocessor, LineartDetector):
             preprocessor = LineartDetector()
         params = dict(coarse=(det == 'lineart(coarse)'))
-    elif det == 'lineart_anime':
+    elif det in ['lineart_anime', 'lineart_anime_with_color_prompt']:
         from annotator.lineart_anime import LineartAnimeDetector
         if not isinstance(preprocessor, LineartAnimeDetector):
             preprocessor = LineartAnimeDetector()
@@ -171,7 +171,7 @@ def process(det, detected_image, prompt, a_prompt, n_prompt, num_samples, ddim_s
     global model, ddim_sampler, last_ckpts, last_config
 
     if isinstance(detected_image, dict):
-        if det in ['grayscale_with_color_prompt', 'grayscale_with_color_brush']:
+        if det in ['grayscale_with_color_prompt', 'grayscale_with_color_brush', 'lineart_anime_with_color_prompt']:
             yuv_bg = cv2.cvtColor(HWC3(detected_image['background']), cv2.COLOR_RGB2YUV)
             yuv_cp = cv2.cvtColor(HWC3(detected_image['composite']), cv2.COLOR_RGB2YUV)
             yuv_cp[:, :, 0] = yuv_bg[:, :, 0]
@@ -269,7 +269,8 @@ def main():
                 det = gr.Radio(choices=[
                     'none', 'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'grayscale', 'blur',
                     'lineart', 'lineart(coarse)', 'lineart_anime', 'shuffle', 'mlsd',
-                    'palette', 'pixel', 'pixel2',
+                    'palette', 'pixel', 'pixel2', 'grayscale_with_color_prompt', 'grayscale_with_color_brush',
+                    'lineart_anime_with_color_prompt',
                 ], type="value", value="none", label="Preprocessor")
                 with gr.Row():
                     detect_button = gr.Button(value="Detect")
