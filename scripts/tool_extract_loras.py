@@ -52,7 +52,7 @@ def main():
             print(f'Extracting weights for task {task}...')
             model.control_model.switch_lora(task)
             save_ckpt = extract(model.state_dict())
-            save_path = os.path.join(args.save_path, f'{task}.pth')
+            save_path = os.path.join(args.save_path, f'{task}.ckpt')
             torch.save(save_ckpt, save_path)
             print(f'Extracted weights for task {task} saved to {save_path}')
 

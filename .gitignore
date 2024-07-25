@@ -160,3 +160,6 @@ lllyasviel
 
 # fid model
 classify_image_graph_def.pb
+
+# test images
+/test_images/
