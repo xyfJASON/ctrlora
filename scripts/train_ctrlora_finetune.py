@@ -9,7 +9,7 @@ import argparse
 
 import torch
 import pytorch_lightning as pl
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Subset
 
 from datasets.multigen20m import MultiGen20M
 from datasets.custom_dataset import CustomDataset
@@ -28,6 +28,7 @@ if __name__ == "__main__":
         'hed', 'canny', 'seg', 'depth', 'normal', 'openpose', 'hedsketch',
         'bbox', 'outpainting', 'inpainting', 'blur', 'grayscale',
     ], help='task name')
+    parser.add_argument("--subset", type=int, default=0, help='train on a subset of the dataset')
     # Model configs
     parser.add_argument("--config", type=str, required=True, help='path to model config file')
     parser.add_argument("--sd_ckpt", type=str, required=True, help='path to pretrained stable diffusion checkpoint')
@@ -55,6 +56,8 @@ if __name__ == "__main__":
         )
     else:
         dataset = CustomDataset(args.dataroot, drop_rate=args.drop_rate)
+    if args.subset > 0:
+        dataset = Subset(dataset, range(args.subset))
     dataloader = DataLoader(dataset, num_workers=16, batch_size=args.bs, shuffle=True)
     print('Dataset size:', len(dataset))
     print('Number of devices:', torch.cuda.device_count())
