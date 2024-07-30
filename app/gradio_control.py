@@ -32,6 +32,10 @@ last_config = None
 last_ckpts = (None, None, None)
 
 
+def check_key(k):
+    return 'lora_layer' in k or 'zero_convs' in k or 'middle_block_out' in k or 'norm' in k
+
+
 def load_state_dict_sd(sd_ckpt):
     global model
     state_dict = load_state_dict(os.path.join(CKPT_SD15_DIR, sd_ckpt), location='cpu')
@@ -42,7 +46,7 @@ def load_state_dict_sd(sd_ckpt):
 def load_state_dict_cn(cn_ckpt):
     global model
     state_dict = load_state_dict(os.path.join(CKPT_BASECN_DIR, cn_ckpt), location='cpu')
-    state_dict = {k: v for k, v in state_dict.items() if k.startswith('control_model')}
+    state_dict = {k: v for k, v in state_dict.items() if k.startswith('control_model') and not check_key(k)}
     model.load_state_dict(state_dict, strict=False)  # noqa
     del state_dict
 
@@ -50,7 +54,7 @@ def load_state_dict_cn(cn_ckpt):
 def load_state_dict_lora(lora_ckpt):
     global model
     state_dict = load_state_dict(os.path.join(CKPT_LORAS_DIR, lora_ckpt), location='cpu')
-    state_dict = {k: v for k, v in state_dict.items() if 'lora_layer' in k or 'zero_convs' in k or 'middle_block_out' in k or 'norm' in k}
+    state_dict = {k: v for k, v in state_dict.items() if check_key(k)}
     model.load_state_dict(state_dict, strict=False)  # noqa
     del state_dict
 
@@ -171,7 +175,7 @@ def process(det, detected_image, prompt, a_prompt, n_prompt, num_samples, ddim_s
     global model, ddim_sampler, last_ckpts, last_config
 
     if isinstance(detected_image, dict):
-        if det in ['grayscale_with_color_prompt', 'grayscale_with_color_brush', 'lineart_anime_with_color_prompt']:
+        if det in ['grayscale_with_color_prompt', 'grayscale_with_color_brush']:
             yuv_bg = cv2.cvtColor(HWC3(detected_image['background']), cv2.COLOR_RGB2YUV)
             yuv_cp = cv2.cvtColor(HWC3(detected_image['composite']), cv2.COLOR_RGB2YUV)
             yuv_cp[:, :, 0] = yuv_bg[:, :, 0]
@@ -184,6 +188,10 @@ def process(det, detected_image, prompt, a_prompt, n_prompt, num_samples, ddim_s
     assert lora_ckpt is not None
     if 'rank128' in lora_ckpt:
         current_config = os.path.join(CONFIG_DIR, 'ctrlora_finetune_sd15_rank128.yaml')
+    elif 'rank256' in lora_ckpt:
+        current_config = os.path.join(CONFIG_DIR, 'ctrlora_finetune_sd15_rank256.yaml')
+    elif 'rank512' in lora_ckpt:
+        current_config = os.path.join(CONFIG_DIR, 'ctrlora_finetune_sd15_rank512.yaml')
     else:
         raise ValueError('Unknown config')
 
