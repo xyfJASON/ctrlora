@@ -19,8 +19,10 @@ def get_parser():
     parser.add_argument("--input_dir", type=str, required=True)
     parser.add_argument("--output_dir", type=str, required=True)
     parser.add_argument("--detector", type=str, choices=[
-        'jpeg', 'palette', 'pixel', 'pixel2', 'blur', 'grayscale', 'inpainting',
-        'lineart', 'lineart_anime', 'shuffle', 'mlsd', 'grayscale_with_color_prompt',
+        'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch',      # from unicontrol
+        'bbox', 'outpainting', 'blur', 'grayscale', 'inpainting',               # from unicontrol
+        'lineart', 'lineart_anime', 'shuffle', 'mlsd',                          # from controlnet v1.1
+        'jpeg', 'palette', 'pixel', 'pixel2', 'grayscale_with_color_prompt',    # proposed new conditions
         'grayscale_with_color_brush', 'lineart_anime_with_color_prompt',
     ], required=True)
     parser.add_argument('--n_processes', type=int, default=1)
@@ -48,7 +50,15 @@ def func(file):
     img = resize_image(HWC3(img), 512)
 
     params = dict()
-    if args.detector == 'blur':
+    if args.detector == 'canny':
+        low_threshold = 100
+        high_threshold = 200
+        params = dict(low_threshold=low_threshold, high_threshold=high_threshold)
+    elif args.detector == 'outpainting':
+        rand_h = np.random.randint(20, 80)
+        rand_w = np.random.randint(20, 80)
+        params = dict(rand_h=rand_h, rand_w=rand_w)
+    elif args.detector == 'blur':
         ksize = discrete_normal(5, 50)
         ksize = ksize * 2 + 1
         params = dict(ksize=ksize)
@@ -82,8 +92,14 @@ def func(file):
         params = dict(thr_v=thr_v, thr_d=thr_d)
 
     img = detector(img, **params)
+    if args.detector == 'openpose' and img.sum() == 0:
+        return
     if img is None:
         return
+    if args.detector == 'depth':
+        img = img[0]
+    elif args.detector == 'normal':
+        img = img[1]
     img = HWC3(img)
     img = Image.fromarray(img)
     img.save(os.path.join(args.output_dir, file))
@@ -96,15 +112,27 @@ if __name__ == '__main__':
     print(f'Using {args.n_processes} processes')
 
     # Build detector
-    if args.detector == 'jpeg':
-        from annotator.jpeg import JpegCompressor
-        detector = JpegCompressor()
-    elif args.detector == 'palette':
-        from annotator.palette import PaletteDetector
-        detector = PaletteDetector()
-    elif args.detector in ['pixel', 'pixel2']:
-        from annotator.pixel import Pixelater
-        detector = Pixelater()
+    if args.detector == 'canny':
+        from annotator.canny import CannyDetector
+        detector = CannyDetector()
+    elif args.detector == 'hed':
+        from annotator.hed import HEDdetector
+        detector = HEDdetector()
+    elif args.detector == 'seg':
+        from annotator.uniformer import UniformerDetector
+        detector = UniformerDetector()
+    elif args.detector in ['depth', 'normal']:
+        from annotator.midas import MidasDetector
+        detector = MidasDetector()
+    elif args.detector == 'openpose':
+        from annotator.openpose import OpenposeDetector
+        detector = OpenposeDetector()
+    elif args.detector == 'hedsketch':
+        from annotator.hedsketch import HEDSketchDetector
+        detector = HEDSketchDetector()
+    elif args.detector == 'outpainting':
+        from annotator.outpainting import Outpainter
+        detector = Outpainter()
     elif args.detector == 'blur':
         from annotator.blur import Blurrer
         detector = Blurrer()
@@ -126,6 +154,15 @@ if __name__ == '__main__':
     elif args.detector == 'mlsd':
         from annotator.mlsd import MLSDdetector
         detector = MLSDdetector()
+    elif args.detector == 'jpeg':
+        from annotator.jpeg import JpegCompressor
+        detector = JpegCompressor()
+    elif args.detector == 'palette':
+        from annotator.palette import PaletteDetector
+        detector = PaletteDetector()
+    elif args.detector in ['pixel', 'pixel2']:
+        from annotator.pixel import Pixelater
+        detector = Pixelater()
     elif args.detector == 'grayscale_with_color_prompt':
         from annotator.grayscale_with_color_prompt import GrayscaleWithColorPromptConverter
         detector = GrayscaleWithColorPromptConverter()
@@ -147,7 +184,10 @@ if __name__ == '__main__':
             func(f)
 
     else:
-        if args.detector in ['lineart', 'lineart_anime', 'lineart_anime_with_color_prompt']:
+        if args.detector in [
+            'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'bbox',
+            'lineart', 'lineart_anime', 'lineart_anime_with_color_prompt',
+        ]:
             raise ValueError(f'{args.detector} detector is not compatible with multiprocessing, please pass --n_processes=1')
         # Multiprocessing
         mp.set_start_method('fork')

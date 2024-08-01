@@ -59,6 +59,8 @@ if __name__ == "__main__":
         model.control_model.switch_lora(args.task)
     weights = load_state_dict(args.ckpt, location='cpu')
     model.load_state_dict(weights, strict=True)
+    if isinstance(model, ControlPretrainLDM):
+        model.control_model.switch_lora(args.task)
     model = model.cuda()
     print(f"Successfully load model ckpt from {args.ckpt}")
 
