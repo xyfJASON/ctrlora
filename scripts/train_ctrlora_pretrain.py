@@ -6,6 +6,7 @@ from share import *
 
 import gc
 import argparse
+import datetime
 from omegaconf import OmegaConf
 
 import torch
@@ -29,6 +30,7 @@ if __name__ == "__main__":
     parser.add_argument("--sd_ckpt", type=str, required=True, help='path to pretrained stable diffusion checkpoint')
     parser.add_argument("--cn_ckpt", type=str, required=True, help='path to pretrained controlnet checkpoint')
     # Training configs
+    parser.add_argument("-n", "--name", type=str, help='experiment name')
     parser.add_argument("--lr", type=float, default=1e-5, help='learning rate')
     parser.add_argument("--bs", type=int, default=4, help='batchsize per device')
     parser.add_argument("--max_steps", type=int, default=700000, help='max training steps')
@@ -110,9 +112,12 @@ if __name__ == "__main__":
     # Build Trainer
     logger_img = ImageLogger(batch_frequency=args.img_logger_freq)
     logger_checkpoint = CheckpointEveryNSteps(save_step_frequency=args.ckpt_logger_freq)
+    if args.name is None:
+        args.name = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
     trainer = pl.Trainer(
         strategy='ddp', accelerator='gpu', devices=-1, accumulate_grad_batches=args.gradacc, replace_sampler_ddp=False,
         max_steps=args.max_steps, precision=args.precision, callbacks=[logger_img, logger_checkpoint],
+        default_root_dir=os.path.join('runs', args.name),
     )
 
     # Train!
