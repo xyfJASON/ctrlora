@@ -22,8 +22,9 @@ def get_parser():
         'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch',      # from unicontrol
         'bbox', 'outpainting', 'blur', 'grayscale', 'inpainting',               # from unicontrol
         'lineart', 'lineart_anime', 'shuffle', 'mlsd',                          # from controlnet v1.1
-        'jpeg', 'palette', 'pixel', 'pixel2', 'grayscale_with_color_prompt',    # proposed new conditions
-        'grayscale_with_color_brush', 'lineart_anime_with_color_prompt',
+        'jpeg', 'palette', 'pixel', 'pixel2', 'illusion',                       # proposed new conditions
+        'grayscale_with_color_prompt', 'grayscale_with_color_brush',
+        'lineart_anime_with_color_prompt',
     ], required=True)
     parser.add_argument('--n_processes', type=int, default=1)
     return parser
@@ -163,6 +164,9 @@ if __name__ == '__main__':
     elif args.detector in ['pixel', 'pixel2']:
         from annotator.pixel import Pixelater
         detector = Pixelater()
+    elif args.detector == 'illusion':
+        from annotator.illusion import IllusionConverter
+        detector = IllusionConverter()
     elif args.detector == 'grayscale_with_color_prompt':
         from annotator.grayscale_with_color_prompt import GrayscaleWithColorPromptConverter
         detector = GrayscaleWithColorPromptConverter()

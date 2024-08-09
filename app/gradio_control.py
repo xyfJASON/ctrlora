@@ -148,6 +148,11 @@ def detect(det, input_image, detect_resolution, image_resolution):
         n_colors = np.random.randint(8, 17)  # [8,16] -> 3-4 bits
         scale = np.random.randint(4, 9)  # [4,8]
         params = dict(n_colors=n_colors, scale=scale, down_interpolation=cv2.INTER_LANCZOS4)
+    elif det == 'illusion':
+        from annotator.illusion import IllusionConverter
+        if not isinstance(preprocessor, IllusionConverter):
+            preprocessor = IllusionConverter()
+        params = dict()
     else:
         raise ValueError('Unknown preprocessor')
 
