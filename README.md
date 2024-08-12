@@ -181,6 +181,7 @@ python scripts/train_ctrlora_pretrain.py \
     --config CONFIG \
     --sd_ckpt SD_CKPT \
     --cn_ckpt CN_CKPT \
+    [--name NAME] \
     [--lr LR] \
     [--bs BS] \
     [--max_steps MAX_STEPS] \
@@ -203,6 +204,7 @@ Arguments related to model:
 
 Arguments related to training:
 
+- `--name`: Optional. Name of the experiment. The logging directory will be `./runs/name`. Default: current time.
 - `--lr`: Optional. Learning rate. Default: `1e-5`.
 - `--bs`: Optional. Batch size on each process. Default: `4`.
 - `--max_steps`: Optional. Maximum number of training steps. Default: `700000`.
@@ -212,7 +214,7 @@ Arguments related to training:
 - `--img_logger_freq`: Optional. Frequency of logging images. Default: `10000`.
 - `--ckpt_logger_freq`: Optional. Frequency of saving checkpoints. Default: `10000`.
 
-The training logs and checkpoints will be saved to `./lightning_logs/version_xxx/`.
+The training logs and checkpoints will be saved to `./runs/name`.
 
 For example, to train BaseControlNet-9tasks-700ksteps with 8 RTX 4090 GPUs and a total batch size of 32:
 
@@ -235,6 +237,7 @@ python scripts/train_ctrlora_finetune.py \
     --config CONFIG \
     --sd_ckpt SD_CKPT \
     --cn_ckpt CN_CKPT \
+    [--name NAME] \
     [--lr LR] \
     [--bs BS] \
     [--max_steps MAX_STEPS] \
@@ -265,6 +268,7 @@ Arguments related to model:
 
 Arguments related to training:
 
+- `--name`: Optional. Name of the experiment. The logging directory will be `./runs/name`. Default: current time.
 - `--lr`: Optional. Learning rate. Default: `1e-5`.
 - `--bs`: Optional. Batch size. Default: `1`.
 - `--max_steps`: Optional. Maximum number of training steps. Default: `100000`.
@@ -274,7 +278,7 @@ Arguments related to training:
 - `--img_logger_freq`: Optional. Frequency of logging images. Default: `1000`.
 - `--ckpt_logger_freq`: Optional. Frequency of saving checkpoints. Default: `1000`.
 
-The training logs and checkpoints will be saved to `./lightning_logs/version_xxx/`.
+The training logs and checkpoints will be saved to `./runs/name`.
 
 <br/>
 
@@ -309,7 +313,7 @@ Arguments related to MultiGen-20M dataset:
 Arguments related to model:
 
 - `--config`: Path to the config file. e.g., `./configs/ctrlora_finetune_sd15_rank128.yaml`.
-- `--ckpt`: Path to the checkpoint, e.g., `./lightning_logs/version_xxx/checkpoints/xxx.ckpt`.
+- `--ckpt`: Path to the checkpoint, e.g., `./runs/xxx/lightning_logs/version_xxx/checkpoints/xxx.ckpt`.
 - `--n_samples`: Number of samples to generate.
 - `--save_dir`: Directory to save the generated images.
 - `--ddim_steps`: Optional. Number of DDIM steps. Default: `50`.

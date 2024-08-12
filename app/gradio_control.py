@@ -262,15 +262,23 @@ def listdir_r(path):
     return files
 
 
+def update_ckpts():
+    sd_ckpt = gr.Dropdown(label='Select stable diffusion checkpoint', choices=sorted(listdir_r(CKPT_SD15_DIR)))
+    cn_ckpt = gr.Dropdown(label='Select base controlnet checkpoint', choices=sorted(listdir_r(CKPT_BASECN_DIR)))
+    lora_ckpt = gr.Dropdown(label='Select lora checkpoint', choices=sorted(listdir_r(CKPT_LORAS_DIR)))
+    return sd_ckpt, cn_ckpt, lora_ckpt
+
+
 def main():
     block = gr.Blocks().queue()
     with block:
         with gr.Row():
             gr.Markdown("## CtrLoRA")
         with gr.Row():
-            sd_ckpt = gr.Dropdown(label='Select stable diffusion checkpoint', choices=sorted(listdir_r(CKPT_SD15_DIR)), value='v1-5-pruned.ckpt')
-            cn_ckpt = gr.Dropdown(label='Select base controlnet checkpoint', choices=sorted(listdir_r(CKPT_BASECN_DIR)))
-            lora_ckpt = gr.Dropdown(label='Select lora checkpoint', choices=sorted(listdir_r(CKPT_LORAS_DIR)))
+            sd_ckpt = gr.Dropdown(label='Select stable diffusion checkpoint', choices=sorted(listdir_r(CKPT_SD15_DIR)), value='v1-5-pruned.ckpt', scale=2)
+            cn_ckpt = gr.Dropdown(label='Select base controlnet checkpoint', choices=sorted(listdir_r(CKPT_BASECN_DIR)), scale=2)
+            lora_ckpt = gr.Dropdown(label='Select lora checkpoint', choices=sorted(listdir_r(CKPT_LORAS_DIR)), scale=2)
+            refresh_button = gr.Button(value="Refresh", scale=1)
         with gr.Row():
             with gr.Column(scale=2):
                 with gr.Row():
@@ -300,6 +308,7 @@ def main():
                     n_prompt = gr.Textbox(label="Negative Prompt", value='lowres, bad anatomy, bad hands, cropped, worst quality')
             with gr.Column(scale=1):
                 result_gallery = gr.Gallery(label='Output', show_label=False, elem_id="gallery")
+        refresh_button.click(fn=update_ckpts, inputs=[], outputs=[sd_ckpt, cn_ckpt, lora_ckpt])
         detect_button.click(fn=detect, inputs=[det, input_image, detect_resolution, image_resolution], outputs=[detected_image])
         ips = [det, detected_image, prompt, a_prompt, n_prompt, num_samples, ddim_steps, guess_mode, strength, scale, seed, eta, sd_ckpt, cn_ckpt, lora_ckpt]
         run_button.click(fn=process, inputs=ips, outputs=[result_gallery])
