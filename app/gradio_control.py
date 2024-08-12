@@ -290,8 +290,8 @@ def main():
                 det = gr.Radio(choices=[
                     'none', 'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'grayscale', 'blur',
                     'lineart', 'lineart(coarse)', 'lineart_anime', 'shuffle', 'mlsd',
-                    'palette', 'pixel', 'pixel2', 'grayscale_with_color_prompt', 'grayscale_with_color_brush',
-                    'lineart_anime_with_color_prompt',
+                    'palette', 'pixel', 'pixel2', 'illusion', 'grayscale_with_color_prompt',
+                    'grayscale_with_color_brush', 'lineart_anime_with_color_prompt',
                 ], type="value", value="none", label="Preprocessor")
                 with gr.Row():
                     detect_button = gr.Button(value="Detect")
