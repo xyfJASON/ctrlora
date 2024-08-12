@@ -257,7 +257,7 @@ def process(det, detected_image, prompt, a_prompt, n_prompt, num_samples, ddim_s
 
 def listdir_r(path):
     path = os.path.expanduser(path)
-    files = [os.path.join(dp, f) for dp, dn, fn in os.walk(path) for f in fn]
+    files = [os.path.join(dp, f) for dp, dn, fn in os.walk(path, followlinks=True) for f in fn]
     files = [f[len(path) + 1:] for f in files]
     return files
 
