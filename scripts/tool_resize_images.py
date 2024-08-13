@@ -20,7 +20,7 @@ def func(f):
     img = img.resize(sz, Image.LANCZOS)
     img = img.crop((img.size[0] // 2 - 256, img.size[1] // 2 - 256,
                     img.size[0] // 2 + 256, img.size[1] // 2 + 256))
-    img.save(os.path.join(args.target, f))
+    img.save(os.path.join(args.target, f), quality=95)
 
 
 if __name__ == '__main__':
