@@ -39,6 +39,7 @@ if __name__ == "__main__":
     parser.add_argument("--ddim_eta", type=float, default=0.0, help='DDIM eta')
     parser.add_argument("--strength", type=float, default=1.0, help='strength of controlnet')
     parser.add_argument("--cfg", type=float, default=7.5, help='unconditional guidance scale')
+    parser.add_argument("--empty_prompt", action='store_true', default=False, help='experimental: use empty prompt')
     args = parser.parse_args()
 
     # Construct Dataset
@@ -77,7 +78,7 @@ if __name__ == "__main__":
         for idx, item in enumerate(dataset):  # type: ignore
             img = ((item['jpg'] + 1.0) / 2.0 * 255.0).astype(np.uint8)
             img = resize_image(HWC3(img), 512)                                  # img: np.uint8, [0, 255]
-            prompt = item['txt']
+            prompt = item['txt'] if not args.empty_prompt else ''
             control = (item['hint'] * 255.0).astype(np.uint8)
             control = resize_image(HWC3(control), 512)
             control = torch.from_numpy(control).float().cuda() / 255.0
