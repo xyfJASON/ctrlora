@@ -153,6 +153,11 @@ def detect(det, input_image, detect_resolution, image_resolution):
         if not isinstance(preprocessor, IllusionConverter):
             preprocessor = IllusionConverter()
         params = dict()
+    elif det == 'densepose':
+        from annotator.densepose import DenseposeDetector
+        if not isinstance(preprocessor, DenseposeDetector):
+            preprocessor = DenseposeDetector()
+        params = dict()
     else:
         raise ValueError('Unknown preprocessor')
 
@@ -291,7 +296,7 @@ def main():
                     'none', 'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'grayscale', 'blur',
                     'lineart', 'lineart(coarse)', 'lineart_anime', 'shuffle', 'mlsd',
                     'palette', 'pixel', 'pixel2', 'illusion', 'grayscale_with_color_prompt',
-                    'grayscale_with_color_brush', 'lineart_anime_with_color_prompt',
+                    'grayscale_with_color_brush', 'lineart_anime_with_color_prompt', "densepose"
                 ], type="value", value="none", label="Preprocessor")
                 with gr.Row():
                     detect_button = gr.Button(value="Detect")
