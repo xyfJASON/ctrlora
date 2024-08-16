@@ -23,3 +23,4 @@ invisible-watermark==0.1.5
 kornia==0.7.2
 scikit-learn==1.4.2
 prettytable==3.6.0
+git+https://github.com/facebookresearch/detectron2@main#subdirectory=projects/DensePose
