@@ -24,7 +24,7 @@ def get_parser():
     parser.add_argument("--sample_dir", type=str, required=True, help='path to the sample directory')
     parser.add_argument("--detector", type=str, choices=[
         'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'bbox',
-        'lineart', 'lineart_anime', 'mlsd', 'palette',
+        'lineart', 'lineart_anime', 'mlsd', 'palette', 'densepose',
     ], help='detector type')
     return parser
 
@@ -98,6 +98,9 @@ def main():
     elif args.detector == 'palette':
         from annotator.palette import PaletteDetector
         detector = PaletteDetector()
+    elif args.detector == 'densepose':
+        from annotator.densepose import DenseposeDetector
+        detector = DenseposeDetector()
     else:
         raise NotImplementedError
 

@@ -22,9 +22,9 @@ def get_parser():
         'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch',      # from unicontrol
         'bbox', 'outpainting', 'blur', 'grayscale', 'inpainting',               # from unicontrol
         'lineart', 'lineart_anime', 'shuffle', 'mlsd',                          # from controlnet v1.1
-        'jpeg', 'palette', 'pixel', 'pixel2', 'illusion',                       # proposed new conditions
+        'jpeg', 'palette', 'pixel', 'pixel2', 'illusion', 'densepose',          # proposed new conditions
         'grayscale_with_color_prompt', 'grayscale_with_color_brush',
-        'lineart_anime_with_color_prompt', 'densepose'
+        'lineart_anime_with_color_prompt',
     ], required=True)
     parser.add_argument('--n_processes', type=int, default=1)
     return parser
@@ -167,6 +167,9 @@ if __name__ == '__main__':
     elif args.detector == 'illusion':
         from annotator.illusion import IllusionConverter
         detector = IllusionConverter()
+    elif args.detector == 'densepose':
+        from annotator.densepose import DenseposeDetector
+        detector = DenseposeDetector()
     elif args.detector == 'grayscale_with_color_prompt':
         from annotator.grayscale_with_color_prompt import GrayscaleWithColorPromptConverter
         detector = GrayscaleWithColorPromptConverter()
@@ -176,9 +179,6 @@ if __name__ == '__main__':
     elif args.detector == 'lineart_anime_with_color_prompt':
         from annotator.lineart_anime_with_color_prompt import LineartAnimeWithColorPromptConverter
         detector = LineartAnimeWithColorPromptConverter()
-    elif args.detector == 'densepose':
-        from annotator.densepose import DenseposeDetector
-        detector = DenseposeDetector()
     else:
         raise NotImplementedError
 
@@ -193,7 +193,7 @@ if __name__ == '__main__':
     else:
         if args.detector in [
             'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'bbox',
-            'lineart', 'lineart_anime', 'lineart_anime_with_color_prompt',
+            'lineart', 'lineart_anime', 'lineart_anime_with_color_prompt', 'densepose',
         ]:
             raise ValueError(f'{args.detector} detector is not compatible with multiprocessing, please pass --n_processes=1')
         # Multiprocessing
