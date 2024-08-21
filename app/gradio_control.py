@@ -158,6 +158,11 @@ def detect(det, input_image, detect_resolution, image_resolution):
         if not isinstance(preprocessor, DenseposeDetector):
             preprocessor = DenseposeDetector()
         params = dict()
+    elif det == 'pad':
+        from annotator.pad import Padder
+        if not isinstance(preprocessor, Padder):
+            preprocessor = Padder()
+        params = dict(top_ratio=0.30, bottom_ratio=0.30, left_ratio=0.30, right_ratio=0.30)
     else:
         raise ValueError('Unknown preprocessor')
 
@@ -293,7 +298,7 @@ def main():
                 num_samples = gr.Slider(label="Images", minimum=1, maximum=12, value=1, step=1)
                 seed = gr.Slider(label="Seed", minimum=-1, maximum=2147483647, step=1, value=12345)
                 det = gr.Radio(choices=[
-                    'none', 'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'grayscale', 'blur',
+                    'none', 'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'grayscale', 'blur', 'pad',
                     'lineart', 'lineart(coarse)', 'lineart_anime', 'shuffle', 'mlsd',
                     'palette', 'pixel', 'pixel2', 'illusion', 'grayscale_with_color_prompt',
                     'grayscale_with_color_brush', 'lineart_anime_with_color_prompt', "densepose"
