@@ -103,7 +103,7 @@ def func(file):
         img = img[1]
     img = HWC3(img)
     img = Image.fromarray(img)
-    img.save(os.path.join(args.output_dir, file))
+    img.save(os.path.join(args.output_dir, file), quality=95, icc_profile=None)
 
 
 if __name__ == '__main__':

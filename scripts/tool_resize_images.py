@@ -9,18 +9,25 @@ def get_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument('--source', type=str, required=True)
     parser.add_argument('--target', type=str, required=True)
+    parser.add_argument('--save_format', type=str, default=None)
     parser.add_argument('--n_processes', type=int, default=4)
     return parser
 
 
 def func(f):
-    img = Image.open(os.path.join(args.source, f))
-    portion = 512 / min(img.size[0], img.size[1])
-    sz = (int(img.size[0] * portion), int(img.size[1] * portion))
-    img = img.resize(sz, Image.LANCZOS)
-    img = img.crop((img.size[0] // 2 - 256, img.size[1] // 2 - 256,
-                    img.size[0] // 2 + 256, img.size[1] // 2 + 256))
-    img.save(os.path.join(args.target, f), quality=95)
+    try:
+        img = Image.open(os.path.join(args.source, f))
+        assert img.mode in ['L', 'RGB', 'RGBA']
+        img_name, img_format = os.path.splitext(f)
+        save_name = img_name + (img_format if args.save_format is None else f'.{args.save_format}')
+        portion = 512 / min(img.size[0], img.size[1])
+        sz = (int(img.size[0] * portion), int(img.size[1] * portion))
+        img = img.resize(sz, Image.LANCZOS)
+        img = img.crop((img.size[0] // 2 - 256, img.size[1] // 2 - 256,
+                        img.size[0] // 2 + 256, img.size[1] // 2 + 256))
+        img.save(os.path.join(args.target, save_name), quality=95, icc_profile=None)
+    except:
+        return
 
 
 if __name__ == '__main__':
