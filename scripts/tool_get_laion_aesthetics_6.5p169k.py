@@ -26,8 +26,8 @@ save_dir = "./data/laion_aesthetics_6.5p169k"
 # ==============================================================================
 
 ds = datasets.load_dataset('bhargavsdesai/laion_improved_aesthetics_6.5plus_with_images')['train']
-img_dir = os.path.join(save_dir, f'images_{args.min_short_size}_{args.min_image_ratio:.2f}_{args.save_image_format}')
-prompt_path = os.path.join(save_dir, f'prompt_{args.min_short_size}_{args.min_image_ratio:.2f}_{args.save_image_format}.json')
+img_dir = os.path.join(save_dir, f'images_{args.min_short_size}_{args.min_image_ratio:.3f}_{args.save_image_format}')
+prompt_path = os.path.join(save_dir, f'prompt_{args.min_short_size}_{args.min_image_ratio:.3f}_{args.save_image_format}.json')
 os.makedirs(img_dir, exist_ok=True)
 
 
