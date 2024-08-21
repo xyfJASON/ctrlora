@@ -162,7 +162,7 @@ def detect(det, input_image, detect_resolution, image_resolution):
         from annotator.pad import Padder
         if not isinstance(preprocessor, Padder):
             preprocessor = Padder()
-        params = dict(top_ratio=0.30, bottom_ratio=0.30, left_ratio=0.30, right_ratio=0.30)
+        params = dict(top_ratio=0.50, bottom_ratio=0.50, left_ratio=0.50, right_ratio=0.50)
     else:
         raise ValueError('Unknown preprocessor')
 
