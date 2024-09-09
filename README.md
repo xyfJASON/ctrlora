@@ -105,10 +105,11 @@ It is recommended to create symbolic links so that you don't need to copy the im
 Take `lineart` as an example:
 
 ```shell
-mkdir ./data/coco-lineart-train
-ln -s $(pwd)/data/coco/prompt-train.json ./data/coco-lineart-train/prompt.json
-ln -s $(pwd)/data/coco/train2017-resized ./data/coco-lineart-train/target
-python scripts/tool_make_cond_images.py --input_dir ./data/coco-lineart-train/target --output_dir ./data/coco-lineart-train/source --detector lineart
+COND=lineart
+mkdir ./data/coco-$COND-train
+ln -s $(pwd)/data/coco/prompt-train.json ./data/coco-$COND-train/prompt.json
+ln -s $(pwd)/data/coco/train2017-resized ./data/coco-$COND-train/target
+python scripts/tool_make_cond_images.py --input_dir ./data/coco-$COND-train/target --output_dir ./data/coco-$COND-train/source --detector $COND
 ```
 
 After running the above commands, the files should look like this:

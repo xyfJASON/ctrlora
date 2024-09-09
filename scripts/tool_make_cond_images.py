@@ -24,7 +24,7 @@ def get_parser():
         'lineart', 'lineart_anime', 'shuffle', 'mlsd',                          # from controlnet v1.1
         'jpeg', 'palette', 'pixel', 'pixel2', 'illusion', 'densepose',          # proposed new conditions
         'grayscale_with_color_prompt', 'grayscale_with_color_brush',
-        'lineart_anime_with_color_prompt',
+        'lineart_anime_with_color_prompt', 'inpainting_brush',
     ], required=True)
     parser.add_argument('--n_processes', type=int, default=1)
     return parser
@@ -179,6 +179,9 @@ if __name__ == '__main__':
     elif args.detector == 'lineart_anime_with_color_prompt':
         from annotator.lineart_anime_with_color_prompt import LineartAnimeWithColorPromptConverter
         detector = LineartAnimeWithColorPromptConverter()
+    elif args.detector == 'inpainting_brush':
+        from annotator.inpainting_brush import BrushInpainter
+        detector = BrushInpainter()
     else:
         raise NotImplementedError
 
