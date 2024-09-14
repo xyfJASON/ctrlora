@@ -8,11 +8,12 @@ from ldm.modules.diffusionmodules.util import timestep_embedding
 
 
 class ControlNetFinetune(ControlNet):
-    def __init__(self, ft_with_lora=True, lora_rank=128, norm_trainable=True, *args, **kwargs):
+    def __init__(self, ft_with_lora=True, lora_rank=128, norm_trainable=True, zero_trainable=True, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ft_with_lora = ft_with_lora
         self.lora_rank = lora_rank
         self.norm_trainable = norm_trainable
+        self.zero_trainable = zero_trainable
 
         # delete input hint block
         del self.input_hint_block
@@ -90,7 +91,7 @@ class ControlFinetuneLDM(ControlLDM):
                 if 'lora_layer' in n:  # lora layers
                     params.append(p)
                     f.write(n + '\n')
-                elif 'zero_convs' in n or 'middle_block_out' in n:  # zero convs
+                elif ('zero_convs' in n or 'middle_block_out' in n) and self.control_model.zero_trainable:  # zero convs
                     # note that middle_block_out is also a zero conv added by controlnet!
                     params.append(p)
                     f.write(n + '\n')
