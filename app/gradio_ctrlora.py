@@ -88,7 +88,11 @@ def load_state_dict_lora(lora_ckpts):
 
 def get_config(lora_ckpt, lora_num=1):
     if lora_num == 1:
-        if 'rank128' in lora_ckpt:
+        if 'rank32' in lora_ckpt:
+            current_config = os.path.join(CONFIG_DIR, 'inference/ctrlora_sd15_rank32_1lora.yaml')
+        elif 'rank64' in lora_ckpt:
+            current_config = os.path.join(CONFIG_DIR, 'inference/ctrlora_sd15_rank64_1lora.yaml')
+        elif 'rank128' in lora_ckpt:
             current_config = os.path.join(CONFIG_DIR, 'inference/ctrlora_sd15_rank128_1lora.yaml')
         elif 'rank256' in lora_ckpt:
             current_config = os.path.join(CONFIG_DIR, 'inference/ctrlora_sd15_rank256_1lora.yaml')
