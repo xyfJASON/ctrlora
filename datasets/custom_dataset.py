@@ -44,9 +44,9 @@ class CustomDataset(Dataset):
         with open(os.path.join(root, 'prompt.json'), 'rt') as f:
             for line in f:
                 data = json.loads(line)
-                if data['source'].lstrip('source/') not in source_files:
+                if data['source'].removeprefix('source/') not in source_files:
                     continue
-                if data['target'].lstrip('target/') not in target_files:
+                if data['target'].removeprefix('target/') not in target_files:
                     continue
                 self.data.append(data)
         del source_files, target_files
