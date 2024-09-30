@@ -536,8 +536,8 @@ def tab2():
                         strength = gr.Slider(label="Control Strength", minimum=0.0, maximum=2.0, value=1.0, step=0.01)
                         scale = gr.Slider(label="Guidance Scale", minimum=0.1, maximum=30.0, value=7.5, step=0.1)
                     with gr.Row():
-                        lora_weight = gr.Slider(label="Condition Weight", minimum=0.0, maximum=2.0, value=1.0, step=0.01)
-                        lora2_weight = gr.Slider(label="Condition2 Weight", minimum=0.0, maximum=2.0, value=1.0, step=0.01)
+                        lora_weight = gr.Slider(label="Condition 1 Weight", minimum=0.0, maximum=2.0, value=1.0, step=0.01)
+                        lora2_weight = gr.Slider(label="Condition 2 Weight", minimum=0.0, maximum=2.0, value=1.0, step=0.01)
 
             with gr.Accordion("Condition 1", open=True):
                 with gr.Row():
