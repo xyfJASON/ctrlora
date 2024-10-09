@@ -23,7 +23,7 @@ def get_parser():
     parser = argparse.ArgumentParser(description="args")
     parser.add_argument("--sample_dir", type=str, required=True, help='path to the sample directory')
     parser.add_argument("--detector", type=str, choices=[
-        'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'bbox',
+        'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch',
         'lineart', 'lineart_anime', 'mlsd', 'palette', 'densepose',
     ], help='detector type')
     return parser

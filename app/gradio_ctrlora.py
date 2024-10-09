@@ -36,8 +36,7 @@ last_ckpts = (None, None, None)
 det_choices = [
     'none', 'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'grayscale', 'blur', 'pad',  # from unicontrol
     'lineart', 'lineart(coarse)', 'lineart_anime', 'shuffle', 'mlsd',                                       # from controlnet v1.1
-    'palette', 'pixel', 'pixel2', 'illusion', 'densepose', 'grayscale_with_color_prompt',                   # proposed new conditions
-    'grayscale_with_color_brush', 'lineart_anime_with_color_prompt',
+    'palette', 'pixel', 'pixel2', 'illusion', 'densepose', 'lineart_anime_with_color_prompt',               # proposed new conditions
 ]
 
 add_prompts = {
@@ -170,7 +169,7 @@ def detect(det, input_image, detect_resolution, image_resolution):
         if not isinstance(preprocessor, HEDSketchDetector):
             preprocessor = HEDSketchDetector()
         params = dict()
-    elif det in ['grayscale', 'grayscale_with_color_prompt', 'grayscale_with_color_brush']:
+    elif det == 'grayscale':
         from annotator.grayscale import GrayscaleConverter
         if not isinstance(preprocessor, GrayscaleConverter):
             preprocessor = GrayscaleConverter()
@@ -264,13 +263,7 @@ def detect(det, input_image, detect_resolution, image_resolution):
 
 def process_detected_image(det, detected_image):
     if isinstance(detected_image, dict):
-        if det in ['grayscale_with_color_prompt', 'grayscale_with_color_brush']:
-            yuv_bg = cv2.cvtColor(HWC3(detected_image['background']), cv2.COLOR_RGB2YUV)
-            yuv_cp = cv2.cvtColor(HWC3(detected_image['composite']), cv2.COLOR_RGB2YUV)
-            yuv_cp[:, :, 0] = yuv_bg[:, :, 0]
-            detected_image = cv2.cvtColor(yuv_cp, cv2.COLOR_YUV2RGB)
-        else:
-            detected_image = detected_image['composite']
+        detected_image = detected_image['composite']
     detected_image = HWC3(detected_image)
     return detected_image
 

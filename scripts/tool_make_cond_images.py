@@ -23,7 +23,6 @@ def get_parser():
         'bbox', 'outpainting', 'blur', 'grayscale', 'inpainting',               # from unicontrol
         'lineart', 'lineart_anime', 'shuffle', 'mlsd',                          # from controlnet v1.1
         'jpeg', 'palette', 'pixel', 'pixel2', 'illusion', 'densepose',          # proposed new conditions
-        'grayscale_with_color_prompt', 'grayscale_with_color_brush',
         'lineart_anime_with_color_prompt', 'inpainting_brush',
     ], required=True)
     parser.add_argument('--n_processes', type=int, default=1)
@@ -170,12 +169,6 @@ if __name__ == '__main__':
     elif args.detector == 'densepose':
         from annotator.densepose import DenseposeDetector
         detector = DenseposeDetector()
-    elif args.detector == 'grayscale_with_color_prompt':
-        from annotator.grayscale_with_color_prompt import GrayscaleWithColorPromptConverter
-        detector = GrayscaleWithColorPromptConverter()
-    elif args.detector == 'grayscale_with_color_brush':
-        from annotator.grayscale_with_color_brush import GrayscaleWithColorBrushConverter
-        detector = GrayscaleWithColorBrushConverter()
     elif args.detector == 'lineart_anime_with_color_prompt':
         from annotator.lineart_anime_with_color_prompt import LineartAnimeWithColorPromptConverter
         detector = LineartAnimeWithColorPromptConverter()
