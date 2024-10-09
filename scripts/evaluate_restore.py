@@ -68,12 +68,6 @@ def main():
     ssim = StructuralSimilarityIndexMeasure(data_range=(0, 1)).cuda()
     clip_sc = CLIPScore(model_name_or_path="openai/clip-vit-large-patch14").cuda()
 
-    control_mse = MeanSquaredError().cuda()
-    control_lpips = LearnedPerceptualImagePatchSimilarity(normalize=True).cuda()
-    control_psnr = PeakSignalNoiseRatio(data_range=(0, 1)).cuda()
-    control_ssim = StructuralSimilarityIndexMeasure(data_range=(0, 1)).cuda()
-    control_clip_sc = CLIPScore(model_name_or_path="openai/clip-vit-large-patch14").cuda()
-
     with torch.no_grad():
         for sample, img, control, prompt in tqdm.tqdm(dataloader):
             sample, img, control = sample.cuda(), img.cuda(), control.cuda()
@@ -84,23 +78,11 @@ def main():
             ssim.update(sample, img)
             clip_sc.update(sample, prompt)
 
-            control_mse.update(control, img)
-            control_lpips.update(control, img)
-            control_psnr.update(control, img)
-            control_ssim.update(control, img)
-            control_clip_sc.update(control, prompt)
-
     print(f'MSE: {mse.compute().item():.4f}')
     print(f'LPIPS: {lpips.compute().item():.4f}')
     print(f'PSNR: {psnr.compute().item():.4f}')
     print(f'SSIM: {ssim.compute().item():.4f}')
     print(f'CLIP SCORE: {clip_sc.compute().item():.4f}')
-    print()
-    print(f'CONTROL MSE: {control_mse.compute().item():.4f}')
-    print(f'CONTROL LPIPS: {control_lpips.compute().item():.4f}')
-    print(f'CONTROL PSNR: {control_psnr.compute().item():.4f}')
-    print(f'CONTROL SSIM: {control_ssim.compute().item():.4f}')
-    print(f'CONTROL CLIP SCORE: {control_clip_sc.compute().item():.4f}')
 
 
 if __name__ == "__main__":
