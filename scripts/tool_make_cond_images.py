@@ -22,7 +22,7 @@ def get_parser():
         'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch',      # from unicontrol
         'bbox', 'outpainting', 'blur', 'grayscale', 'inpainting',               # from unicontrol
         'lineart', 'lineart_anime', 'shuffle', 'mlsd',                          # from controlnet v1.1
-        'jpeg', 'palette', 'pixel', 'pixel2', 'illusion', 'densepose',          # proposed new conditions
+        'jpeg', 'palette', 'pixel', 'illusion', 'densepose',                    # proposed new conditions
         'lineart_anime_with_color_prompt', 'inpainting_brush',
     ], required=True)
     parser.add_argument('--n_processes', type=int, default=1)
@@ -76,10 +76,6 @@ def func(file):
         jpeg_quality = discrete_normal(10, 30)
         params = dict(jpeg_quality=jpeg_quality)
     elif args.detector == 'pixel':
-        n_colors = np.random.randint(8, 17)  # [8,16] -> 3-4 bits
-        scale = np.random.randint(4, 9)  # [4,8]
-        params = dict(n_colors=n_colors, scale=scale)
-    elif args.detector == 'pixel2':
         n_colors = np.random.randint(8, 17)  # [8,16] -> 3-4 bits
         scale = np.random.randint(4, 9)  # [4,8]
         params = dict(n_colors=n_colors, scale=scale, down_interpolation=cv2.INTER_LANCZOS4)
@@ -160,7 +156,7 @@ if __name__ == '__main__':
     elif args.detector == 'palette':
         from annotator.palette import PaletteDetector
         detector = PaletteDetector()
-    elif args.detector in ['pixel', 'pixel2']:
+    elif args.detector == 'pixel':
         from annotator.pixel import Pixelater
         detector = Pixelater()
     elif args.detector == 'illusion':

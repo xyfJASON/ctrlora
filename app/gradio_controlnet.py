@@ -35,7 +35,7 @@ last_ckpts = (None, None)
 det_choices = [
     'none', 'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'grayscale', 'blur', 'pad',  # from unicontrol
     'lineart', 'lineart(coarse)', 'lineart_anime', 'shuffle', 'mlsd',                                       # from controlnet v1.1
-    'palette', 'pixel', 'pixel2', 'illusion', 'densepose', 'lineart_anime_with_color_prompt',               # proposed new conditions
+    'palette', 'pixel', 'illusion', 'densepose', 'lineart_anime_with_color_prompt',                         # proposed new conditions
 ]
 
 add_prompts = {
@@ -185,13 +185,6 @@ def detect(det, input_image, detect_resolution, image_resolution):
             preprocessor = PaletteDetector()
         params = dict()
     elif det == 'pixel':
-        from annotator.pixel import Pixelater
-        if not isinstance(preprocessor, Pixelater):
-            preprocessor = Pixelater()
-        n_colors = np.random.randint(8, 17)  # [8,16] -> 3-4 bits
-        scale = np.random.randint(4, 9)  # [4,8]
-        params = dict(n_colors=n_colors, scale=scale)
-    elif det == 'pixel2':
         from annotator.pixel import Pixelater
         if not isinstance(preprocessor, Pixelater):
             preprocessor = Pixelater()
