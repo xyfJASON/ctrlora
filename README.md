@@ -1,10 +1,55 @@
-# ctrlora
+<p align="center">
+    <img src="./assets/banner.jpg" alt="banner" style="width: 100%" />
+</p>
 
-Add LoRA to ControlNet.
+<h1 align="center"> 
+    <a href="https://arxiv.org/abs/2410.09400">CtrLoRA</a>
+</h1>
+
+<a href="https://arxiv.org/abs/2410.09400"><img src="https://img.shields.io/badge/arXiv-B31B1B?label=%F0%9F%93%9D&labelColor=FFFDD0" style="height: 28px" /></a>
+<a href="https://huggingface.co/xyfJASON/ctrlora/tree/main"><img src="https://img.shields.io/badge/Model-3A98B9?label=%F0%9F%A4%97&labelColor=FFFDD0" style="height: 28px" /></a>
+
+> **[CtrLoRA: An Extensible and Efficient Framework for Controllable Image Generation](https://arxiv.org/abs/2410.09400)** \
+> Yifeng Xu<sup>1,2</sup>, Zhenliang He<sup>1</sup>, Shiguang Shan<sup>1,2</sup>, Xilin Chen<sup>1,2</sup> \
+> <sup>1</sup>Key Lab of AI Safety, Institute of Computing Technology, CAS, China \
+> <sup>2</sup>University of Chinese Academy of Sciences, China
 
 
+<p align="center">
+    <img src="./assets/overview.jpg" alt="base-conditions" style="width: 100%" />
+</p>
 
-## Installation
+We first train a **Base ControlNet** along with **condition-specific LoRAs** on base conditions with a large-scale dataset. Then, our Base ControlNet can be efficiently adapted to novel conditions by new LoRAs with as few as 1,000 images and less than 1 hour on a single GPU. 
+
+
+## 🎨 Visual Results
+
+### 🎨 Controllable generation on base conditions
+
+<p align="center">
+    <img src="./assets/base-conditions.jpg" alt="base-conditions" style="width: 100%" />
+</p>
+
+### 🎨 Controllable generation on novel conditions
+
+<p align="center">
+    <img src="./assets/novel-conditions.jpg" alt="novel-conditions" style="width: 100%" />
+</p>
+
+### 🎨 Integration into community models & Multi-conditional generation
+
+<p align="center">
+    <img src="./assets/community-multi.jpg" alt="integration" style="width: 100%" />
+</p>
+
+### 🎨 Application to style transfer
+
+<p align="center">
+    <img src="./assets/style-transfer.jpg" alt="style-transfer" style="width: 100%" />
+</p>
+
+
+## 🛠️ Installation
 
 Clone this repo:
 
@@ -27,15 +72,61 @@ pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio==0.13.1 --e
 pip install -r requirements.txt
 ```
 
-<br/>
+
+## 🤖️ Download Pretrained Models
+
+We provide our pretrained models [here](https://huggingface.co/xyfJASON/ctrlora/tree/main). Please put the **Base ControlNet** (`ctrlora_sd15_basecn700k.ckpt`) into `./ckpts/ctrlora-basecn` and the **LoRAs** into `./ckpts/ctrlora-loras`.
+The naming convention of the LoRAs is `ctrlora_sd15_<basecn>_<condition>.ckpt` for base conditions and `ctrlora_sd15_<basecn>_<condition>_<images>_<steps>.ckpt` for novel conditions.
+
+You also need to download the **SD1.5-based Models** and put them into `./ckpts/sd15`. Models used in our work:
+
+- Stable Diffusion v1.5 (`v1-5-pruned.ckpt`): [official](https://huggingface.co/runwayml/stable-diffusion-v1-5/tree/main) / [mirror](https://huggingface.co/stable-diffusion-v1-5/stable-diffusion-v1-5/tree/main)
+- [Realistic Vision](https://civitai.com/models/4201/realistic-vision-v60-b1)
+- [Dreamshaper](https://civitai.com/models/4384/dreamshaper)
+- [Mistoon Anime](https://civitai.com/models/24149?modelVersionId=348981)
+- [Comic Babes](https://civitai.com/models/20294/comic-babes)
+- [Oil Painting](https://civitai.com/models/20184/oil-painting)
+- [Inkpunk](https://civitai.com/models/1087/inkpunk-diffusion?modelVersionId=1138)
+- [Chinese Ink Comic-strip](https://civitai.com/models/148239/or-chinese-ink-comic-strip)
+- [Slate Pencil Mix](https://civitai.com/models/389528/slatepencilmix)
+- [Aziib Pixel Mix](https://civitai.com/models/195730/aziibpixelmix)
 
 
 
-## Datasets Preparation
+## 🚀 Gradio Demo
 
-### Custom dataset
+```shell
+python app/gradio_ctrlora.py
+```
 
-Please put your custom data under `./data/custom_data_name` and organize it in the following structure:
+Notes:
+- *Requires at least 9GB/21GB GPU RAM to generate a batch of one/four 512x512 images.*
+- *If you upload any new checkpoints, click "Refresh".*
+
+### 🚀 Single-conditional generation
+<img src="./assets/gradio.jpg" alt="gradio" style="width: 100%;" />
+
+Quickstart:
+1. select the Stable Diffusion checkpoint, Base Controlnet checkpoint and LoRA checkpoint.
+2. write prompts and negative prompts. We provide several commonly used prompts.
+3. prepare a condition image
+    + upload an image, select a preprocessor, and click "Detect".
+    + or upload the condition image directly, select the "none" preprocessor, and click "Detect".
+4. click "Run" to generate images.
+
+
+### 🚀 Multi-conditional generation
+<img src="./assets/gradio2.jpg" alt="gradio2" style="width: 100%;" />
+
+
+
+## 🔥 Train a LoRA for Your Custom Condition
+
+*Based on our Base ControlNet, you can train a LoRA for your custom condition with as few as 1,000 images and less than 1 hour on a single GPU (20GB).*
+
+First, download the Stable Diffusion v1.5 (`v1-5-pruned.ckpt`) into `./ckpts/sd15` and the Base ControlNet (`ctrlora_sd15_basecn700k.ckpt`) into `./ckpts/ctrlora-basecn` as described [above](#%EF%B8%8F-download-pretrained-models).
+
+Second, put your custom data into `./data/<custom_data_name>` with the following structure:
 
 ```
 data
@@ -53,271 +144,63 @@ data
 
 - `source` contains condition images, such as canny edges, segmentation maps, depth images, etc.
 - `target` contains ground-truth images corresponding to the condition images.
-- Each line in `prompt.json` should follow the following format: `{"source": "source/0000.jpg", "target": "target/0000.jpg", "prompt": "The quick brown fox jumps over the lazy dog."}`.
+- each line of `prompt.json` should follow the format like `{"source": "source/0000.jpg", "target": "target/0000.jpg", "prompt": "The quick brown fox jumps over the lazy dog."}`.
 
-
-
-### COCO 2017
-
-Please download the training set (`train2017.zip`), validation set (`val2017.zip`) and annotations file (`annotations_trainval2017.zip`) from [here](https://cocodataset.org/#download). 
-Unzip and organize the files as follows:
-
-```
-data
-└── coco
-    ├── annotations
-    │   ├── captions_train2017.json
-    │   └── captions_val2017.json
-    ├── train2017
-    │   ├── 000000000009.jpg
-    │   ├── 000000000025.jpg
-    │   └── ...
-    └── val2017
-        ├── 000000000139.jpg
-        ├── 000000000285.jpg
-        └── ...
-```
-
-Then, run the following commands to process the data:
-
-```shell
-python scripts/tool_resize_images.py --source ./data/coco/train2017 --target ./data/coco/train2017-resized
-python scripts/tool_resize_images.py --source ./data/coco/val2017 --target ./data/coco/val2017-resized
-python scripts/tool_get_prompt_coco.py --ann_file ./data/coco/annotations/captions_train2017.json --save_path ./data/coco/prompt-train.json
-python scripts/tool_get_prompt_coco.py --ann_file ./data/coco/annotations/captions_val2017.json --save_path ./data/coco/prompt-val.json
-```
-
-After processing, the files should look like this:
-
-```
-data
-└── coco
-    ├── prompt-train.json
-    ├── prompt-val.json
-    ├── train2017-resized  (contains 118287 images)
-    ├── val2017-resized    (contains 5000 images)
-    └── ...
-```
-
-To use the coco dataset for training / evaluation, we need to organize it into the structure of a custom dataset. 
-It is recommended to create symbolic links so that you don't need to copy the images.
-
-Take `lineart` as an example:
-
-```shell
-COND=lineart
-mkdir ./data/coco-$COND-train
-ln -s $(pwd)/data/coco/prompt-train.json ./data/coco-$COND-train/prompt.json
-ln -s $(pwd)/data/coco/train2017-resized ./data/coco-$COND-train/target
-python scripts/tool_make_cond_images.py --input_dir ./data/coco-$COND-train/target --output_dir ./data/coco-$COND-train/source --detector $COND
-```
-
-After running the above commands, the files should look like this:
-
-```
-data
-└── coco-lineart-train
-    ├── prompt.json (symbolic link)
-    ├── source
-    │   ├── 000000000009.jpg
-    │   ├── 000000000025.jpg
-    │   └── ...
-    └── target (symbolic link)
-        ├── 000000000009.jpg
-        ├── 000000000025.jpg
-        └── ...
-```
-
-So now the dataset can be used just like a custom dataset.
-
-
-
-### MultiGen-20M
-
-MultiGen-20M is a large image-prompt-condition dataset proposed by [UniControl](https://github.com/salesforce/UniControl). Please download the dataset from [here](https://console.cloud.google.com/storage/browser/sfr-unicontrol-data-research/dataset) and unzip it to `./data/MultiGen-20M`. The files should be organized as follows:
-
-```
-data
-└── MultiGen-20M
-    ├── conditions
-    │   ├── aesthetics_6_25_plus_group_0_bbox
-    │   ├── aesthetics_6_25_plus_group_0_blur
-    │   ├── ...
-    │   └── aesthetics_6_25_plus_group_9_segbase
-    ├── images
-    │   ├── aesthetics_6_25_plus_3m
-    │   ├── aesthetics_6_plus_0
-    │   ├── ...
-    │   └── aesthetics_6_plus_3
-    └── json_files
-        ├── aesthetics_plus_all_group_bbox_all.json
-        ├── aesthetics_plus_all_group_blur_all.json
-        ├── ...
-        └── aesthetics_plus_all_group_seg_all.json
-```
-
-<br/>
-
-
-
-## Checkpoints Preparation
-
-First, download the [Stable Diffusion v1.5 checkpoint](https://huggingface.co/runwayml/stable-diffusion-v1-5/tree/main) and put it in `./ckpts`. You only need to download `v1-5-pruned.ckpt`.
-
-Then, make a ControlNet checkpoint initialized with SD UNet encoder by:
-
-```shell
-python scripts/tool_make_control_init.py --config ./configs/cldm_v15.yaml --sd_ckpt ./ckpts/v1-5-pruned.ckpt --output_path ./ckpts/control_sd15_init.pth
-```
-
-<br/>
-
-
-
-## Pretrain the Base ControlNet
-
-```shell
-python scripts/train_ctrlora_pretrain.py \
-    --dataroot DATAROOT \
-    --config CONFIG \
-    --sd_ckpt SD_CKPT \
-    --cn_ckpt CN_CKPT \
-    [--name NAME] \
-    [--lr LR] \
-    [--bs BS] \
-    [--max_steps MAX_STEPS] \
-    [--gradacc GRADACC] \
-    [--precision PRECISION] \
-    [--save_memory] \
-    [--img_logger_freq IMG_LOGGER_FREQ] \
-    [--ckpt_logger_freq CKPT_LOGGER_FREQ]
-```
-
-Arguments related to dataset:
-
-- `--dataroot`: Path to the MultiGen-20M dataset, e.g, `./data/MultiGen-20M`.
-
-Arguments related to model:
-
-- `--config`: Path to the config file, e.g., `./configs/ctrlora_pretrain_sd15_9tasks_rank128.yaml`.
-- `--sd_ckpt`: Path to the Stable Diffusion checkpoint, e.g., `./ckpts/v1-5-pruned.ckpt`.
-- `--cn_ckpt`: Path to the ControlNet checkpoint, e.g., `./ckpts/control_sd15_init.pth`.
-
-Arguments related to training:
-
-- `--name`: Optional. Name of the experiment. The logging directory will be `./runs/name`. Default: current time.
-- `--lr`: Optional. Learning rate. Default: `1e-5`.
-- `--bs`: Optional. Batch size on each process. Default: `4`.
-- `--max_steps`: Optional. Maximum number of training steps. Default: `700000`.
-- `--gradacc`: Optional. Gradient accumulation. Default: `1`.
-- `--precision`: Optional. Precision. Default: `32`.
-- `--save_memory`: Optional. Save memory by using sliced attention. Default: `False`.
-- `--img_logger_freq`: Optional. Frequency of logging images. Default: `10000`.
-- `--ckpt_logger_freq`: Optional. Frequency of saving checkpoints. Default: `10000`.
-
-The training logs and checkpoints will be saved to `./runs/name`.
-
-For example, to train BaseControlNet-9tasks-700ksteps with 8 RTX 4090 GPUs and a total batch size of 32:
-
-```shell
-python scripts/train_ctrlora_pretrain.py --dataroot ./data/MultiGen-20M --config ./configs/ctrlora_pretrain_sd15_9tasks_rank128.yaml --sd_ckpt ./ckpts/v1-5-pruned.ckpt --cn_ckpt ./ckpts/control_sd15_init.pth --bs 1 --gradacc 4 --save_memory --max_steps 700000
-```
-
-<br/>
-
-
-
-## Finetune the Base ControlNet (with lora or full-params)
+Third, run the following command to train the LoRA for your custom condition:
 
 ```shell
 python scripts/train_ctrlora_finetune.py \
-    --dataroot DATAROOT \
-    [--drop_rate DROP_RATE] \
-    [--multigen20m] \
-    [--task TASK] \
-    --config CONFIG \
-    --sd_ckpt SD_CKPT \
-    --cn_ckpt CN_CKPT \
+    --dataroot ./data/<custom_data_name> \
+    --config ./configs/ctrlora_finetune_sd15_rank128.yaml \
+    --sd_ckpt ./ckpts/sd15/v1-5-pruned.ckpt \
+    --cn_ckpt ./ckpts/ctrlora-basecn/ctrlora_sd15_basecn700k.ckpt \
     [--name NAME] \
-    [--lr LR] \
-    [--bs BS] \
-    [--max_steps MAX_STEPS] \
-    [--gradacc GRADACC] \
-    [--precision PRECISION] \
-    [--save_memory] \
-    [--img_logger_freq IMG_LOGGER_FREQ] \
-    [--ckpt_logger_freq CKPT_LOGGER_FREQ]
+    [--max_steps MAX_STEPS]
 ```
 
-Arguments related to custom dataset:
+- `--dataroot`: path to the custom data.
+- `--name`: name of the experiment. The logging directory will be `./runs/name`. Default: current time.
+- `--max_steps`: maximum number of training steps. Default: `100000`.
 
-- `--dataroot`: Path to the dataset.
-- `--drop_rate`: Optional. Drop rate for classifier-free guidance. Default: 0.3.
-
-Arguments related to MultiGen-20M dataset:
-
-- `--multigen20m`: Set this flag to use MultiGen-20M.
-- `--dataroot`: Path to the MultiGen-20M dataset, e.g., `./data/MultiGen-20M`.
-- `--drop_rate`: Optional. Drop rate for classifier-free guidance. Default: 0.3.
-- `--task`: Task to train on. Choices: `{'hed', 'canny', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'bbox', 'outpainting', 'inpainting', 'blur', 'grayscale'}`.
-
-Arguments related to model:
-
-- `--config`: Path to the config file, e.g., `./configs/ctrlora_finetune_sd15_rank128.yaml`.
-- `--sd_ckpt`: Path to the Stable Diffusion checkpoint, e.g., `./ckpts/v1-5-pruned.ckpt`.
-- `--cn_ckpt`: Path to the ControlNet checkpoint, e.g., `./ckpts/control_sd15_init.pth`.
-
-Arguments related to training:
-
-- `--name`: Optional. Name of the experiment. The logging directory will be `./runs/name`. Default: current time.
-- `--lr`: Optional. Learning rate. Default: `1e-5`.
-- `--bs`: Optional. Batch size. Default: `1`.
-- `--max_steps`: Optional. Maximum number of training steps. Default: `100000`.
-- `--gradacc`: Optional. Gradient accumulation. Default: `1`.
-- `--precision`: Optional. Precision. Default: `32`.
-- `--save_memory`: Optional. Save memory by using sliced attention. Default: `False`.
-- `--img_logger_freq`: Optional. Frequency of logging images. Default: `1000`.
-- `--ckpt_logger_freq`: Optional. Frequency of saving checkpoints. Default: `1000`.
-
-The training logs and checkpoints will be saved to `./runs/name`.
-
-<br/>
-
-
-
-## Sample images
+After training, extract the LoRA weights with the following command:
 
 ```shell
-python sample.py --dataroot DATAROOT \
-                 [--multigen20m] \
-                 [--task TASK] \
-                 --config CONFIG \
-                 --ckpt CKPT \
-                 --n_samples N_SAMPLES \
-                 --save_dir SAVE_DIR \
-                 [--ddim_steps DDIM_STEPS] \
-                 [--ddim_eta DDIM_ETA] \
-                 [--strength STRENGTH] \
-                 [--cfg CFG]
+python scripts/tool_extract_weights.py -t lora --ckpt CHECKPOINT --save_path SAVE_PATH
 ```
 
-Arguments related to custom dataset:
+- `--ckpt`: path to the checkpoint produced by the above training.
+- `--save_path`: path to save the extracted LoRA weights.
 
-- `--dataroot`: Path to the dataset.
+Finally, put the extracted LoRA into `./ckpts/ctrlora-loras` and use it in the [Gradio demo](#-gradio-demo).
 
-Arguments related to MultiGen-20M dataset:
 
-- `--multigen20m`: Set this flag to use MultiGen-20M.
-- `--dataroot`: Path to the MultiGen-20M dataset, e.g., `./data/MultiGen-20M`.
-- `--task`: Task to test on. Choices: `{'hed', 'canny', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'bbox', 'outpainting', 'inpainting', 'blur', 'grayscale'}`.
 
-Arguments related to model:
+## 📚 Detailed Instructions
 
-- `--config`: Path to the config file. e.g., `./configs/ctrlora_finetune_sd15_rank128.yaml`.
-- `--ckpt`: Path to the checkpoint, e.g., `./runs/xxx/lightning_logs/version_xxx/checkpoints/xxx.ckpt`.
-- `--n_samples`: Number of samples to generate.
-- `--save_dir`: Directory to save the generated images.
-- `--ddim_steps`: Optional. Number of DDIM steps. Default: `50`.
-- `--ddim_eta`: Optional. DDIM eta. Default: `0.0`.
-- `--strength`: Optional. Strength of the ControlNet. Default: `1.0`.
-- `--cfg`: Optional. Strength of classifier-free guidance. Default: `7.5`.
+Please refer to the instructions [here](./README-traineval.md) for more details of training, fine-tuning, and evaluation.
+
+
+
+## 🪧 Acknowledgement
+
+This project is built upon Stable Diffusion, ControlNet, and UniControl. Thanks for their great work!
+
+- Stable Diffusion v1.5: https://github.com/runwayml/stable-diffusion
+- ControlNet v1.0: https://github.com/lllyasviel/ControlNet
+- ControlNet v1.1: https://github.com/lllyasviel/ControlNet-v1-1-nightly
+- UniControl: https://github.com/salesforce/UniControl
+
+
+
+## 🖋️ Citation
+
+If you find this project helpful, please consider citing:
+
+```bibtex
+@article{xu2024ctrlora,
+  title={CtrLoRA: An Extensible and Efficient Framework for Controllable Image Generation},
+  author={Xu, Yifeng and He, Zhenliang and Shan, Shiguang and Chen, Xilin},
+  journal={arXiv preprint arXiv:2410.09400},
+  year={2024}
+}
+```

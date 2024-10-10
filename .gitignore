@@ -150,6 +150,9 @@ lllyasviel
 # data
 /data/
 
+# runs
+/runs/
+
 # ckpts
 /ckpts/
 /annotator/ckpts/
