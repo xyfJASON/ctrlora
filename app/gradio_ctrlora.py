@@ -35,7 +35,7 @@ last_ckpts = (None, None, None)
 
 det_choices = [
     'none', 'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'grayscale', 'blur', 'pad',  # from unicontrol
-    'lineart', 'lineart(coarse)', 'lineart_anime', 'shuffle', 'mlsd',                                       # from controlnet v1.1
+    'lineart', 'lineart_coarse', 'lineart_anime', 'shuffle', 'mlsd',                                        # from controlnet v1.1
     'palette', 'pixel', 'illusion', 'densepose', 'lineart_anime_with_color_prompt',                         # proposed new conditions
 ]
 
@@ -187,11 +187,11 @@ def detect(det, input_image, detect_resolution, image_resolution):
         if not isinstance(preprocessor, Padder):
             preprocessor = Padder()
         params = dict(top_ratio=0.50, bottom_ratio=0.50, left_ratio=0.50, right_ratio=0.50)
-    elif det in ['lineart', 'lineart(coarse)']:
+    elif det in ['lineart', 'lineart_coarse']:
         from annotator.lineart import LineartDetector
         if not isinstance(preprocessor, LineartDetector):
             preprocessor = LineartDetector()
-        params = dict(coarse=(det == 'lineart(coarse)'))
+        params = dict(coarse=(det == 'lineart_coarse'))
     elif det in ['lineart_anime', 'lineart_anime_with_color_prompt']:
         from annotator.lineart_anime import LineartAnimeDetector
         if not isinstance(preprocessor, LineartAnimeDetector):
