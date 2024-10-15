@@ -10,7 +10,7 @@
 <a href="https://huggingface.co/xyfJASON/ctrlora/tree/main"><img src="https://img.shields.io/badge/Model-3A98B9?label=%F0%9F%A4%97&labelColor=FFFDD0" style="height: 28px" /></a>
 
 > **[CtrLoRA: An Extensible and Efficient Framework for Controllable Image Generation](https://arxiv.org/abs/2410.09400)** \
-> Yifeng Xu<sup>1,2</sup>, Zhenliang He<sup>1</sup>, Shiguang Shan<sup>1,2</sup>, Xilin Chen<sup>1,2</sup> \
+> [Yifeng Xu](https://xyfjason.github.io/homepage)<sup>1,2</sup>, [Zhenliang He](https://lynnho.github.io)<sup>1</sup>, [Shiguang Shan](https://scholar.google.com/citations?user=Vkzd7MIAAAAJ)<sup>1,2</sup>, [Xilin Chen](https://scholar.google.com/citations?user=vVx2v20AAAAJ)<sup>1,2</sup> \
 > <sup>1</sup>Key Lab of AI Safety, Institute of Computing Technology, CAS, China \
 > <sup>2</sup>University of Chinese Academy of Sciences, China
 
