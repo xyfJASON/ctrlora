@@ -99,7 +99,8 @@ python app/gradio_ctrlora.py
 
 ### 🚀 Single-conditional generation
 
-Quickstart 
+Steps
+
 1. select the Stable Diffusion checkpoint, Base Controlnet checkpoint and LoRA checkpoint.
 2. write prompts and negative prompts. We provide several commonly used prompts.
 3. prepare a condition image
@@ -114,6 +115,23 @@ Quickstart
 ### 🚀 Multi-conditional generation
 
 <img src="./assets/gradio2.jpg" alt="gradio2" style="width: 100%;" />
+
+
+### 🚀 Application to style transfer
+
+Steps
+
+1. select a [stylized Stable Diffusion](#%EF%B8%8F-download-pretrained-models) checkpoint to specify the target style, e.g., Pixel.
+2. select the Base ControlNet checkpoint.
+3. select **palette** for the LoRA1 checkpont and **lineart** for the LoRA2 checkpont.
+   + *palette + canny or palette + hed also work, maybe there are more interesting combinations*
+4. write prompts and negative prompts.
+5. upload the source image to the "Condition 1" panel, select the **"none"** preprocessor, and click "Detect".
+6. upload the source image to the "Condition 2" panel, select the **"lineart"** preprocessor, and click "Detect".
+7. adjust the weights for the two conditions in the "Basic options" panel.
+8. click "Run" to generate images.
+
+<img src="./assets/gradio3.jpg" alt="gradio3" style="width: 100%;" />
 
 
 
