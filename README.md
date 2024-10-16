@@ -99,8 +99,6 @@ python app/gradio_ctrlora.py
 
 ### 🚀 Single-conditional generation
 
-Steps
-
 1. select the Stable Diffusion checkpoint, Base Controlnet checkpoint and LoRA checkpoint.
 2. write prompts and negative prompts. We provide several commonly used prompts.
 3. prepare a condition image
@@ -118,8 +116,6 @@ Steps
 
 
 ### 🚀 Application to style transfer
-
-Steps
 
 1. select a [stylized Stable Diffusion](#%EF%B8%8F-download-pretrained-models) checkpoint to specify the target style, e.g., Pixel.
 2. select the Base ControlNet checkpoint.
