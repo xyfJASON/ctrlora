@@ -102,7 +102,7 @@ python app/gradio_ctrlora.py
 1. select the Stable Diffusion checkpoint, Base Controlnet checkpoint and LoRA checkpoint.
 2. write prompts and negative prompts. We provide several commonly used prompts.
 3. prepare a condition image
-    + upload an image to the left of the "Condition" panel, select a preprocessor, and click "Detect".
+    + upload an image to the left of the "Condition" panel, select the preprocessor corresponding to the LoRA, and click "Detect".
     + or upload the condition image directly, select the "none" preprocessor, and click "Detect".
 4. click "Run" to generate images.
 5. *if you upload any new checkpoints, restart gradio or click "Refresh".*
@@ -119,8 +119,8 @@ python app/gradio_ctrlora.py
 
 1. select a [stylized Stable Diffusion](#%EF%B8%8F-download-pretrained-models) checkpoint to specify the target style, e.g., Pixel.
 2. select the Base ControlNet checkpoint.
-3. select **palette** for the LoRA1 checkpont and **lineart** for the LoRA2 checkpont.
-   + *palette + canny or palette + hed also work, maybe there are more interesting combinations*
+3. select **palette** for the LoRA1 checkpoint and **lineart** for the LoRA2 checkpoint.
+   + *palette + canny or palette + hed also work, maybe there are more interesting combinations to be discover*
 4. write prompts and negative prompts.
 5. upload the source image to the "Condition 1" panel, select the **"none"** preprocessor, and click "Detect".
 6. upload the source image to the "Condition 2" panel, select the **"lineart"** preprocessor, and click "Detect".
