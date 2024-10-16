@@ -24,29 +24,26 @@ We first train a **Base ControlNet** along with **condition-specific LoRAs** on 
 
 ## 🎨 Visual Results
 
-### 🎨 Controllable generation on base conditions
+### 🎨 Controllable generation on "base conditions"
 
-<p align="center">
-    <img src="./assets/base-conditions.jpg" alt="base-conditions" style="width: 100%" />
-</p>
+|<img src="./assets/base-conditions.jpg" alt="base-conditions" style="width: 100%" />|
+|-|
 
-### 🎨 Controllable generation on novel conditions
+### 🎨 Controllable generation on "novel conditions"
 
-<p align="center">
-    <img src="./assets/novel-conditions.jpg" alt="novel-conditions" style="width: 100%" />
-</p>
+|<img src="./assets/novel-conditions.jpg" alt="novel-conditions" style="width: 100%" />|
+|-|
+
 
 ### 🎨 Integration into community models & Multi-conditional generation
 
-<p align="center">
-    <img src="./assets/community-multi.jpg" alt="integration" style="width: 100%" />
-</p>
+|<img src="./assets/community-multi.jpg" alt="integration" style="width: 100%" />|
+|-|
 
 ### 🎨 Application to style transfer
 
-<p align="center">
-    <img src="./assets/style-transfer.jpg" alt="style-transfer" style="width: 100%" />
-</p>
+|<img src="./assets/style-transfer.jpg" alt="style-transfer" style="width: 100%" />|
+|-|
 
 
 ## 🛠️ Installation
@@ -98,24 +95,24 @@ You also need to download the **SD1.5-based Models** and put them into `./ckpts/
 ```shell
 python app/gradio_ctrlora.py
 ```
-
-Notes:
-- *Requires at least 9GB/21GB GPU RAM to generate a batch of one/four 512x512 images.*
-- *If you upload any new checkpoints, click "Refresh".*
+*Requires at least 9GB/21GB GPU RAM to generate a batch of one/four 512x512 images.*
 
 ### 🚀 Single-conditional generation
-<img src="./assets/gradio.jpg" alt="gradio" style="width: 100%;" />
 
-Quickstart:
+Quickstart 
 1. select the Stable Diffusion checkpoint, Base Controlnet checkpoint and LoRA checkpoint.
 2. write prompts and negative prompts. We provide several commonly used prompts.
 3. prepare a condition image
-    + upload an image, select a preprocessor, and click "Detect".
+    + upload an image to the left of the "Condition" panel, select a preprocessor, and click "Detect".
     + or upload the condition image directly, select the "none" preprocessor, and click "Detect".
 4. click "Run" to generate images.
+5. *if you upload any new checkpoints, restart gradio or click "Refresh".*
+
+<img src="./assets/gradio.jpg" alt="gradio" style="width: 100%;" />
 
 
 ### 🚀 Multi-conditional generation
+
 <img src="./assets/gradio2.jpg" alt="gradio2" style="width: 100%;" />
 
 
