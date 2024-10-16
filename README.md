@@ -120,7 +120,7 @@ python app/gradio_ctrlora.py
 1. select a [stylized Stable Diffusion](#%EF%B8%8F-download-pretrained-models) checkpoint to specify the target style, e.g., Pixel.
 2. select the Base ControlNet checkpoint.
 3. select **palette** for the LoRA1 checkpoint and **lineart** for the LoRA2 checkpoint.
-   + *palette + canny or palette + hed also work, maybe there are more interesting combinations to be discover*
+   + *palette + canny or palette + hed also work, maybe there are more interesting combinations to be discovered*
 4. write prompts and negative prompts.
 5. upload the source image to the "Condition 1" panel, select the **"none"** preprocessor, and click "Detect".
 6. upload the source image to the "Condition 2" panel, select the **"lineart"** preprocessor, and click "Detect".
