@@ -57,7 +57,7 @@ We first train a **Base ControlNet** along with **condition-specific LoRAs** on 
 Clone this repo:
 
 ```shell
-git clone https://github.com/xyfJASON/ctrlora.git
+git clone --depth 1 https://github.com/xyfJASON/ctrlora.git
 cd ctrlora
 ```
 
