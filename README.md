@@ -2,6 +2,11 @@
     <img src="./assets/banner.jpg" alt="banner" style="width: 100%" />
 </p>
 
+<p align="center">
+    <img src="./assets/style-transfer.gif" alt="style-transfer" style="width: 100%" />
+</p>
+*The images are compressed.*
+
 <h1 align="center"> 
     <a href="https://arxiv.org/abs/2410.09400">CtrLoRA</a>
 </h1>
