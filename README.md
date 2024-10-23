@@ -6,7 +6,7 @@
     <img src="./assets/style-transfer.gif" alt="style-transfer" style="width: 100%" />
 </p>
 
-*The images are compressed.*
+*The images are compressed for loading speed.*
 
 <h1 align="center"> 
     <a href="https://arxiv.org/abs/2410.09400">CtrLoRA</a>
