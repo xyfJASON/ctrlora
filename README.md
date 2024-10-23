@@ -5,6 +5,7 @@
 <p align="center">
     <img src="./assets/style-transfer.gif" alt="style-transfer" style="width: 100%" />
 </p>
+
 *The images are compressed.*
 
 <h1 align="center"> 
