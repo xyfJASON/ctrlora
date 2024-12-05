@@ -33,9 +33,9 @@ last_config = None
 last_ckpts = (None, None)
 
 det_choices = [
-    'none', 'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'grayscale', 'blur', 'pad',  # from unicontrol
-    'lineart', 'lineart_coarse', 'lineart_anime', 'shuffle', 'mlsd',                                        # from controlnet v1.1
-    'palette', 'pixel', 'illusion', 'densepose', 'lineart_anime_with_color_prompt',                         # proposed new conditions
+    'none', 'canny', 'hed', 'seg', 'depth', 'normal', 'openpose', 'hedsketch', 'grayscale', 'blur', 'pad', 'bbox',  # from unicontrol
+    'lineart', 'lineart_coarse', 'lineart_anime', 'shuffle', 'mlsd',                                                # from controlnet v1.1
+    'palette', 'pixel', 'illusion', 'densepose', 'lineart_anime_with_color_prompt',                                 # proposed new conditions
 ]
 
 add_prompts = {
@@ -157,6 +157,11 @@ def detect(det, input_image, detect_resolution, image_resolution):
         if not isinstance(preprocessor, Padder):
             preprocessor = Padder()
         params = dict(top_ratio=0.50, bottom_ratio=0.50, left_ratio=0.50, right_ratio=0.50)
+    elif det == 'bbox':
+        from annotator.bbox import BBoxDetector
+        if not isinstance(preprocessor, BBoxDetector):
+            preprocessor = BBoxDetector()
+        params = dict()
     elif det in ['lineart', 'lineart_coarse']:
         from annotator.lineart import LineartDetector
         if not isinstance(preprocessor, LineartDetector):

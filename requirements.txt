@@ -24,4 +24,6 @@ kornia==0.7.2
 scikit-learn==1.4.2
 prettytable==3.6.0
 fastapi==0.110.2
+tensorflow==2.18.0
+cvlib==0.2.7
 git+https://github.com/facebookresearch/detectron2@main#subdirectory=projects/DensePose

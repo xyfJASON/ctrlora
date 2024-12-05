@@ -126,6 +126,9 @@ if __name__ == '__main__':
     elif args.detector == 'hedsketch':
         from annotator.hedsketch import HEDSketchDetector
         detector = HEDSketchDetector()
+    elif args.detector == 'bbox':
+        from annotator.bbox import BBoxDetector
+        detector = BBoxDetector()
     elif args.detector == 'outpainting':
         from annotator.outpainting import Outpainter
         detector = Outpainter()
