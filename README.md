@@ -137,6 +137,55 @@ python app/gradio_ctrlora.py
 
 
 
+## 🚗 Python API
+
+Besides the Gradio demo, you can also sample images with the following Python code.
+
+### 🚗 Single-conditional generation
+
+```python
+from api import CtrLoRA
+
+ctrlora = CtrLoRA(num_loras=1)
+ctrlora.create_model(
+    sd_file='ckpts/sd15/v1-5-pruned.ckpt',
+    basecn_file='ckpts/ctrlora-basecn/ctrlora_sd15_basecn700k.ckpt',
+    lora_files='ckpts/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_inpainting_brush_rank128_1kimgs_1ksteps.ckpt',
+)
+samples = ctrlora.sample(
+    cond_image_paths='assets/test_images/inpaint_cat.png',
+    prompt='A cat wearing a brown cowboy hat, best quality',
+    n_prompt='worst quality',
+    num_samples=1,
+)
+samples[0].show()
+```
+
+### 🚗 Multi-conditional generation
+
+```python
+from api import CtrLoRA
+
+ctrlora = CtrLoRA(num_loras=2)
+ctrlora.create_model(
+    sd_file='ckpts/sd15/v1-5-pruned.ckpt',
+    basecn_file='ckpts/ctrlora-basecn/ctrlora_sd15_basecn700k.ckpt',
+    lora_files=('ckpts/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_lineart_rank128_1kimgs_1ksteps.ckpt',
+                'ckpts/ctrlora-loras/novel-conditions/ctrlora_sd15_basecn700k_palette_rank128_100kimgs_100ksteps.ckpt'),
+)
+samples = ctrlora.sample(
+    cond_image_paths=('assets/test_images/lineart_bird.png',
+                      'assets/test_images/palette_bird.png'),
+    prompt='Photo of a parrot, best quality',
+    n_prompt='worst quality',
+    num_samples=1,
+    lora_weights=(1.0, 1.0),
+)
+samples[0].show()
+```
+
+
+
 ## 🔥 Train a LoRA for Your Custom Condition
 
 *Based on our Base ControlNet, you can train a LoRA for your custom condition with as few as 1,000 images and less than 1 hour on a single GPU (20GB).*
