@@ -29,7 +29,7 @@
 We first train a **Base ControlNet** along with **condition-specific LoRAs** on base conditions with a large-scale dataset. Then, our Base ControlNet can be efficiently adapted to novel conditions by new LoRAs with <mark>as few as 1,000 images and less than 1 hour on a single GPU</mark>. 
 
 
-## Content
+## 📜 Content
 - [🎨 Visual Results](#-visual-results)
 - [🛠️ Installation](#%EF%B8%8F-installation)
 - [🤖️ Download Pretrained Models](#%EF%B8%8F-download-pretrained-models)
