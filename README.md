@@ -1,3 +1,4 @@
+## To create your customized ControlNet in an easy and low-cost manner 🎉
 <p align="center">
     <img src="./assets/banner.jpg" alt="banner" style="width: 100%" />
 </p>
@@ -26,6 +27,16 @@
 </p>
 
 We first train a **Base ControlNet** along with **condition-specific LoRAs** on base conditions with a large-scale dataset. Then, our Base ControlNet can be efficiently adapted to novel conditions by new LoRAs with <mark>as few as 1,000 images and less than 1 hour on a single GPU</mark>. 
+
+
+## Content
+- [🎨 Visual Results](#-visual-results)
+- [🛠️ Installation](#%EF%B8%8F-installation)
+- [🤖️ Download Pretrained Models](#%EF%B8%8F-download-pretrained-models)
+- [🚀 Gradio Demo](#-gradio-demo)
+- [🚗 Python API](#-python-api)
+- [🔥 Train a LoRA for Your Custom Condition](#-train-a-lora-for-your-custom-condition)
+- [📚 Detailed Instructions](#-detailed-instructions)
 
 
 ## 🎨 Visual Results
