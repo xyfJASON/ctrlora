@@ -114,7 +114,7 @@ python app/gradio_ctrlora.py
 ```
 *Requires at least 9GB/21GB GPU RAM to generate a batch of one/four 512x512 images.*
 
-<details><summary><h3>🚀 Single-conditional generation</h3></summary>
+<details><summary><strong>Single-conditional generation</strong></summary>
 
 1. select the Stable Diffusion checkpoint, Base Controlnet checkpoint and LoRA checkpoint.
 2. write prompts and negative prompts. We provide several commonly used prompts.
@@ -129,14 +129,14 @@ python app/gradio_ctrlora.py
 </details>
 
 
-<details><summary><h3>🚀 Multi-conditional generation</h3></summary>
+<details><summary><strong>Multi-conditional generation</strong></summary>
 
 <img src="./assets/gradio2.jpg" alt="gradio2" style="width: 100%;" />
 
 </details>
 
 
-<details><summary><h3>🚀 Application to style transfer</h3></summary>
+<details><summary><strong>Application to style transfer</strong></summary>
 
 1. select a [stylized Stable Diffusion](#%EF%B8%8F-download-pretrained-models) checkpoint to specify the target style, e.g., Pixel.
 2. select the Base ControlNet checkpoint.
