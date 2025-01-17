@@ -212,6 +212,7 @@ Many thanks to [Kosinkadink](https://github.com/Kosinkadink) for his hard work t
 | :-:                                                                                                                                                    | :-:                                                                                                                                                                  |
 | <img src="./assets/workflow-ctrlora-canny.jpg" style="width: 100%;" />                                                                                 | <img src="./assets/workflow-ctrlora-style-transfer.jpg" style="width: 100%;" />                                                                                      |
 | **[CtrLoRA-AnimateDiff-Lineart](https://raw.githubusercontent.com/xyfJASON/ctrlora/refs/heads/main/assets/workflow-ctrlora-animatediff-lineart.json)** | **[CtrLoRA-AnimateDiff-Style-Transfer](https://raw.githubusercontent.com/xyfJASON/ctrlora/refs/heads/main/assets/workflow-ctrlora-animatediff-style-transfer.json)** |
+| <img src="./assets/workflow-ctrlora-animatediff-lineart.jpg" style="width: 100%;" />                                                                   | <img src="./assets/workflow-ctrlora-animatediff-style-transfer.jpg" style="width: 100%;" />                                                                          |
 
 
 
