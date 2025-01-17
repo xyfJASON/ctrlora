@@ -35,6 +35,7 @@ We first train a **Base ControlNet** along with **condition-specific LoRAs** on 
 - [🤖️ Download Pretrained Models](#%EF%B8%8F-download-pretrained-models)
 - [🚀 Gradio Demo](#-gradio-demo)
 - [🚗 Python API](#-python-api)
+- [🚢 ComfyUI Workflows](#-comfyui-workflows)
 - [🔥 Train a LoRA for Your Custom Condition](#-train-a-lora-for-your-custom-condition)
 - [📚 Detailed Instructions](#-detailed-instructions)
 
@@ -154,17 +155,6 @@ python app/gradio_ctrlora.py
 
 
 
-## 🚢 ComfyUI Workflows
-
-Many thanks to [Kosinkadink](https://github.com/Kosinkadink) for his hard work to create the [CtrLoRA node](https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet/blob/main/adv_control/nodes_ctrlora.py)! Many thanks to [toyxyz](https://github.com/toyxyz) for sharing his workflow using CtrLoRA with AnimateDiff!
-
-| **[CtrLoRA-Canny](https://raw.githubusercontent.com/xyfJASON/ctrlora/refs/heads/main/assets/workflow-ctrlora-canny.json)**   | **[CtrLoRA-Style-Transfer](https://raw.githubusercontent.com/xyfJASON/ctrlora/refs/heads/main/assets/workflow-ctrlora-style-transfer.json)**   |
-|:-:|:-:|
-| <img src="./assets/workflow-ctrlora-canny.jpg" style="width: 100%;" /> | <img src="./assets/workflow-ctrlora-style-transfer.jpg" style="width: 100%;" /> |
-| **[CtrLoRA-AnimateDiff-Lineart](https://raw.githubusercontent.com/xyfJASON/ctrlora/refs/heads/main/assets/workflow-ctrlora-animatediff-lineart.json)**   | **[CtrLoRA-AnimateDiff-Style-Transfer](https://raw.githubusercontent.com/xyfJASON/ctrlora/refs/heads/main/assets/workflow-ctrlora-animatediff-style-transfer.json)**   |
-
-
-
 ## 🚗 Python API
 
 Besides the Gradio demo, you can also sample images with the following Python code.
@@ -211,6 +201,17 @@ samples = ctrlora.sample(
 )
 samples[0].show()
 ```
+
+
+
+## 🚢 ComfyUI Workflows
+
+Many thanks to [Kosinkadink](https://github.com/Kosinkadink) for his hard work to create the [CtrLoRA node](https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet/blob/main/adv_control/nodes_ctrlora.py)! Many thanks to [toyxyz](https://github.com/toyxyz) for sharing his workflow using CtrLoRA with AnimateDiff!
+
+| **[CtrLoRA-Canny](https://raw.githubusercontent.com/xyfJASON/ctrlora/refs/heads/main/assets/workflow-ctrlora-canny.json)**                             | **[CtrLoRA-Style-Transfer](https://raw.githubusercontent.com/xyfJASON/ctrlora/refs/heads/main/assets/workflow-ctrlora-style-transfer.json)**                         |
+| :-:                                                                                                                                                    | :-:                                                                                                                                                                  |
+| <img src="./assets/workflow-ctrlora-canny.jpg" style="width: 100%;" />                                                                                 | <img src="./assets/workflow-ctrlora-style-transfer.jpg" style="width: 100%;" />                                                                                      |
+| **[CtrLoRA-AnimateDiff-Lineart](https://raw.githubusercontent.com/xyfJASON/ctrlora/refs/heads/main/assets/workflow-ctrlora-animatediff-lineart.json)** | **[CtrLoRA-AnimateDiff-Style-Transfer](https://raw.githubusercontent.com/xyfJASON/ctrlora/refs/heads/main/assets/workflow-ctrlora-animatediff-style-transfer.json)** |
 
 
 
