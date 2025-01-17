@@ -26,7 +26,7 @@
     <img src="./assets/overview.jpg" alt="base-conditions" style="width: 100%" />
 </p>
 
-We first train a **Base ControlNet** along with **condition-specific LoRAs** on base conditions with a large-scale dataset. Then, our Base ControlNet can be efficiently adapted to novel conditions by new LoRAs with <mark>as few as 1,000 images and less than 1 hour on a single GPU</mark>. 
+We first train a **Base ControlNet** along with **condition-specific LoRAs** on base conditions with a large-scale dataset. Then, our Base ControlNet can be efficiently adapted to novel conditions by new LoRAs with <mark>10% parameters, as few as 1,000 images, and less than 1 hour training on a single GPU</mark>. 
 
 
 ## 📜 Contents
