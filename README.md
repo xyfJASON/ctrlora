@@ -154,6 +154,17 @@ python app/gradio_ctrlora.py
 
 
 
+## 🚢 ComfyUI Workflows
+
+Many thanks to [Kosinkadink](https://github.com/Kosinkadink) for his hard work to create the [CtrLoRA node](https://github.com/Kosinkadink/ComfyUI-Advanced-ControlNet/blob/main/adv_control/nodes_ctrlora.py)! Many thanks to [toyxyz](https://github.com/toyxyz) for sharing his workflow using CtrLoRA with AnimateDiff!
+
+| **[CtrLoRA-Canny](./assets/workflow-ctrlora-canny.json)**   | **[CtrLoRA-Style-Transfer](./assets/workflow-ctrlora-style-transfer.json)**   |
+|:-:|:-:|
+| <img src="./assets/workflow-ctrlora-canny.jpg" style="width: 100%;" /> | <img src="./assets/workflow-ctrlora-style-transfer.jpg" style="width: 100%;" /> |
+| **[CtrLoRA-AnimateDiff-Lineart](./assets/workflow-ctrlora-animatediff-lineart.json)**   | **[CtrLoRA-AnimateDiff-Style-Transfer](./assets/workflow-ctrlora-animatediff-style-transfer.json)**   |
+
+
+
 ## 🚗 Python API
 
 Besides the Gradio demo, you can also sample images with the following Python code.
