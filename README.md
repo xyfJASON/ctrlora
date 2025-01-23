@@ -13,7 +13,7 @@
     <a href="https://arxiv.org/abs/2410.09400">CtrLoRA</a>
 </h1>
 
-<a href="https://arxiv.org/abs/2410.09400"><img src="https://img.shields.io/badge/arXiv-B31B1B?label=%F0%9F%93%9D&labelColor=FFFDD0" style="height: 28px" /></a>
+<a href="https://arxiv.org/abs/2410.09400"><img src="https://img.shields.io/badge/ICLR 2025-3A98B9?label=%F0%9F%93%9D&labelColor=FFFDD0" style="height: 28px" /></a>
 <a href="https://huggingface.co/xyfJASON/ctrlora/tree/main"><img src="https://img.shields.io/badge/Model-3A98B9?label=%F0%9F%A4%97&labelColor=FFFDD0" style="height: 28px" /></a>
 
 > **[CtrLoRA: An Extensible and Efficient Framework for Controllable Image Generation](https://arxiv.org/abs/2410.09400)** \
