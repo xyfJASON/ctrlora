@@ -8,7 +8,7 @@ from cldm.cldm import ControlNet, ControlLDM
 from cldm.lora import LoRALinearLayer, LoRACompatibleLinear
 from cldm.switchable import SwitchableConv2d, SwitchableLayerNorm, SwitchableGroupNorm
 from ldm.modules.diffusionmodules.util import timestep_embedding
-
+import ipdb
 
 class ControlNetInference(ControlNet):
     def __init__(self, lora_rank=128, lora_num=1, *args, **kwargs):
@@ -163,16 +163,27 @@ class ControlInferenceLDM(ControlLDM):
 
         diffusion_model = self.model.diffusion_model
         cond_txt = torch.cat(conds[0]['c_crossattn'], 1)
-        controls = []
-        for i, cond in enumerate(conds):
-            self.control_model.switch_lora(i)
-            hint = torch.cat(cond['c_concat'], 1)
-            hint = self.get_first_stage_encoding(self.encode_first_stage(hint))
-            control = self.control_model(hint=hint, timesteps=t, context=cond_txt)
-            control = [c * scale for c, scale in zip(control, self.control_scales)]
-            controls.append(control)
-        control = [c * weights[0] for c in controls[0]]
-        for i in range(1, len(controls)):
-            control = [c + controls[i][j] * weights[i] for j, c in enumerate(control)]
-        eps = diffusion_model(x=x_noisy, timesteps=t, context=cond_txt, control=control, only_mid_control=self.only_mid_control)
+        if conds[0]['c_ip'][0] is not None:
+            cond_ip = torch.cat(conds[0]['c_ip'], 1)
+        else:
+            cond_ip=None
+        if conds[0]['c_concat'][0] is not None:
+            controls = []
+            for i, cond in enumerate(conds): 
+                self.control_model.switch_lora(i)
+                hint = torch.cat(cond['c_concat'], 1)
+                hint = self.get_first_stage_encoding(self.encode_first_stage(hint))
+                control = self.control_model(hint=hint, timesteps=t, context=cond_txt)
+                control = [c * scale for c, scale in zip(control, self.control_scales)]
+                controls.append(control)
+            control = [c * weights[0] for c in controls[0]]
+            for i in range(1, len(controls)):
+                control = [c + controls[i][j] * weights[i] for j, c in enumerate(control)]
+        else:
+            control = None
+        if isinstance(cond_txt, list):
+            context_with_ip = [[txt, cond_ip] for txt in cond_txt]
+        else:
+            context_with_ip = [[cond_txt, cond_ip]]
+        eps = diffusion_model(x=x_noisy, timesteps=t, context=context_with_ip, control=control, only_mid_control=self.only_mid_control)
         return eps
