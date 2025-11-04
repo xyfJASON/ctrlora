@@ -163,7 +163,7 @@ class ControlInferenceLDM(ControlLDM):
 
         diffusion_model = self.model.diffusion_model
         cond_txt = torch.cat(conds[0]['c_crossattn'], 1)
-        if conds[0]['c_ip'][0] is not None:
+        if conds[0].get('c_ip') is not None:
             cond_ip = torch.cat(conds[0]['c_ip'], 1)
         else:
             cond_ip=None

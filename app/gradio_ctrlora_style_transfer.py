@@ -397,8 +397,8 @@ def process(det, detected_image, prompt, n_prompt, num_samples, ddim_steps, gues
         if config.save_memory:
             model.low_vram_shift(is_diffusing=False)
 
-        cond = {"c_concat": [control], "c_crossattn": [model.get_learned_conditioning([prompt] * num_samples)], 'c_ip':[None]}
-        un_cond = {"c_concat": None if guess_mode else [control], "c_crossattn": [model.get_learned_conditioning([n_prompt] * num_samples)], 'c_ip':[None]}
+        cond = {"c_concat": [control], "c_crossattn": [model.get_learned_conditioning([prompt] * num_samples)]}
+        un_cond = {"c_concat": None if guess_mode else [control], "c_crossattn": [model.get_learned_conditioning([n_prompt] * num_samples)]}
 
         if config.save_memory:
             model.low_vram_shift(is_diffusing=True)
