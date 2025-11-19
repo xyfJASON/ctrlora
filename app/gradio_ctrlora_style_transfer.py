@@ -203,7 +203,10 @@ def build_model(sd_ckpt, cn_ckpt, lora_ckpts, ip_ckpt=None, ip_scale=None, targe
     assert lora_ckpts is not None
     assert len(lora_ckpts) == lora_num
 
-    current_config = get_config(lora_ckpts[0], lora_num)
+    if ip_ckpt is not None:
+        current_config = os.path.join(CONFIG_DIR, 'inference/ctrlora_style_sd15_rank128_1lora.yaml')
+    else:
+        current_config = get_config(lora_ckpts[0], lora_num)
 
     if current_config != last_config:
         print(f'Loading config...')

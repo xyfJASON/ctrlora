@@ -8,7 +8,7 @@ from cldm.cldm import ControlNet, ControlLDM
 from cldm.lora import LoRALinearLayer, LoRACompatibleLinear
 from cldm.switchable import SwitchableConv2d, SwitchableLayerNorm, SwitchableGroupNorm
 from ldm.modules.diffusionmodules.util import timestep_embedding
-import ipdb
+
 
 class ControlNetInference(ControlNet):
     def __init__(self, lora_rank=128, lora_num=1, *args, **kwargs):
@@ -174,6 +174,5 @@ class ControlInferenceLDM(ControlLDM):
         control = [c * weights[0] for c in controls[0]]
         for i in range(1, len(controls)):
             control = [c + controls[i][j] * weights[i] for j, c in enumerate(control)]
-        # ipdb.set_trace()
         eps = diffusion_model(x=x_noisy, timesteps=t, context=cond_txt, control=control, only_mid_control=self.only_mid_control)
         return eps
