@@ -193,6 +193,100 @@ class CrossAttention(nn.Module):
         out = rearrange(out, '(b h) n d -> b n (h d)', h=h)
         return self.to_out(out)
 
+class IPCrossAttention(nn.Module):
+    def __init__(self, query_dim, context_dim=None, heads=8, dim_head=64, dropout=0.):
+        super().__init__()
+        inner_dim = dim_head * heads
+        context_dim = default(context_dim, query_dim)
+
+        self.scale = dim_head ** -0.5
+        self.heads = heads
+
+        self.to_q = nn.Linear(query_dim, inner_dim, bias=False)
+        self.to_k = nn.Linear(context_dim, inner_dim, bias=False)
+        self.to_v = nn.Linear(context_dim, inner_dim, bias=False)
+        self.to_k_ip = nn.Linear(context_dim, inner_dim, bias=False)
+        self.to_v_ip = nn.Linear(context_dim, inner_dim, bias=False)
+        self.register_buffer('ip_scale', torch.tensor(0.0))
+
+        self.to_out = nn.Sequential(
+            nn.Linear(inner_dim, query_dim),
+            nn.Dropout(dropout)
+        )
+
+    def forward(self, x, context=None, mask=None):
+        if isinstance(context, list):
+            #ipdb.set_trace()
+            pass
+        else:
+            context = [context, None]
+        
+        context_pro=context[0]
+        
+        use_ip=context[1] is not None
+        #use_ip=False
+        if use_ip:
+            context_ip=context[1].float()
+
+        h = self.heads
+
+        q = self.to_q(x)
+        assert context is not None
+        k = self.to_k(context[0])
+        v = self.to_v(context[0])
+        if use_ip:
+            k_ip = self.to_k_ip(context_ip)
+            v_ip = self.to_v_ip(context_ip)
+
+        q, k, v = map(lambda t: rearrange(t, 'b n (h d) -> (b h) n d', h=h), (q, k, v))
+        if use_ip:
+            k_ip, v_ip = map(lambda t: rearrange(t, 'b n (h d) -> (b h) n d', h=h), (k_ip, v_ip))
+
+        # force cast to fp32 to avoid overflowing
+        if _ATTN_PRECISION =="fp32":
+            with torch.autocast(enabled=False, device_type = 'cuda'):
+                q, k = q.float(), k.float()
+                sim = einsum('b i d, b j d -> b i j', q, k) * self.scale
+                if use_ip:
+                    k_ip = k_ip.float()
+                    sim_ip = einsum('b i d, b j d -> b i j', q, k_ip) * self.scale
+        else:
+            sim = einsum('b i d, b j d -> b i j', q, k) * self.scale
+            if use_ip:
+                sim_ip = einsum('b i d, b j d -> b i j', q, k_ip) * self.scale
+        
+        del q, k
+        if use_ip:
+            del k_ip
+    
+        if exists(mask):
+            mask = rearrange(mask, 'b ... -> b (...)')
+            max_neg_value = -torch.finfo(sim.dtype).max
+            mask = repeat(mask, 'b j -> (b h) () j', h=h)
+            sim.masked_fill_(~mask, max_neg_value)
+            if use_ip:
+                sim_ip.masked_fill_(~mask, max_neg_value)
+
+        # attention, what we cannot get enough of
+        sim = sim.softmax(dim=-1)
+        if use_ip:
+            sim_ip = sim_ip.softmax(dim=-1)
+
+        out = einsum('b i j, b j d -> b i d', sim, v)
+        out = rearrange(out, '(b h) n d -> b n (h d)', h=h)
+        if use_ip:
+            out_ip = einsum('b i j, b j d -> b i d', sim_ip, v_ip)
+            out_ip = rearrange(out_ip, '(b h) n d -> b n (h d)', h=h)
+            def adain(content, style):
+                    content_mean = content.mean(dim=1, keepdim=True)
+                    content_std = content.std(dim=1, keepdim=True)
+                    style_mean = style.mean(dim=1, keepdim=True)
+                    style_std = style.std(dim=1, keepdim=True)
+                    normalized_content = (content - content_mean) / content_std
+                    stylized_content = normalized_content * style_std + style_mean
+                    return stylized_content
+            out = out + self.ip_scale * out_ip
+        return self.to_out(out)
 
 class MemoryEfficientCrossAttention(nn.Module):
     # https://github.com/MatthieuTPHR/diffusers/blob/d80b531ff8060ec1ea982b65a1b8df70f73aa67c/src/diffusers/models/attention.py#L223
@@ -242,23 +336,108 @@ class MemoryEfficientCrossAttention(nn.Module):
         )
         return self.to_out(out)
 
+class IPMemoryEfficientCrossAttention(nn.Module):
+    def __init__(self, query_dim, context_dim=None, heads=8, dim_head=64, dropout=0.0):
+        super().__init__()
+        print(f"Setting up {self.__class__.__name__}. Query dim is {query_dim}, context_dim is {context_dim} and using "
+              f"{heads} heads.")
+        inner_dim = dim_head * heads
+        context_dim = default(context_dim, query_dim)
+
+        self.heads = heads
+        self.dim_head = dim_head
+
+        self.to_q = nn.Linear(query_dim, inner_dim, bias=False)
+        self.to_k = nn.Linear(context_dim, inner_dim, bias=False)
+        self.to_v = nn.Linear(context_dim, inner_dim, bias=False)
+
+        self.to_k_ip = nn.Linear(context_dim, inner_dim, bias=False)
+        self.to_v_ip = nn.Linear(context_dim, inner_dim, bias=False)
+        self.register_buffer('ip_scale', torch.tensor(0.0))
+
+        self.to_out = nn.Sequential(nn.Linear(inner_dim, query_dim), nn.Dropout(dropout))
+        self.attention_op: Optional[Any] = None
+
+    def forward(self, x, context=None, mask=None):
+        if isinstance(context, list):
+            pass
+        else:
+            context = [context, None]
+        
+        q = self.to_q(x)
+        context_p = default(context[0], x)
+        k = self.to_k(context_p)
+        v = self.to_v(context_p)
+
+        b, _, _ = q.shape
+        q, k, v = map(
+            lambda t: t.unsqueeze(3)
+            .reshape(b, t.shape[1], self.heads, self.dim_head)
+            .permute(0, 2, 1, 3)
+            .reshape(b * self.heads, t.shape[1], self.dim_head)
+            .contiguous(),
+            (q, k, v),
+        )        
+
+        # actually compute the attention, what we cannot get enough of
+        out = xformers.ops.memory_efficient_attention(q, k, v, attn_bias=None, op=self.attention_op)
+        if exists(mask):
+            raise NotImplementedError
+        out = (
+            out.unsqueeze(0)
+            .reshape(b, self.heads, out.shape[1], self.dim_head)
+            .permute(0, 2, 1, 3)
+            .reshape(b, out.shape[1], self.heads * self.dim_head)
+        )
+
+        use_ip = context[1] is not None
+        if use_ip:
+            context_ip = context[1].float()
+            k_ip = self.to_k_ip(context_ip)
+            v_ip = self.to_v_ip(context_ip)
+
+            k_ip, v_ip = map(
+                lambda t: t.unsqueeze(3)
+                .reshape(b, t.shape[1], self.heads, self.dim_head)
+                .permute(0, 2, 1, 3)
+                .reshape(b * self.heads, t.shape[1], self.dim_head)
+                .contiguous(),
+                (k_ip, v_ip),
+            )
+            # actually compute the attention, what we cannot get enough of
+            out_ip = xformers.ops.memory_efficient_attention(q, k_ip, v_ip, attn_bias=None, op=self.attention_op)
+
+            if exists(mask):
+                raise NotImplementedError
+            out_ip = (
+                out_ip.unsqueeze(0)
+                .reshape(b, self.heads, out_ip.shape[1], self.dim_head)
+                .permute(0, 2, 1, 3)
+                .reshape(b, out_ip.shape[1], self.heads * self.dim_head)
+            )
+
+            out = out + self.ip_scale * out_ip
+        return self.to_out(out)
 
 class BasicTransformerBlock(nn.Module):
     ATTENTION_MODES = {
         "softmax": CrossAttention,  # vanilla attention
-        "softmax-xformers": MemoryEfficientCrossAttention
+        "softmax-ip": IPCrossAttention,  # vanilla attention
+        "softmax-xformers": MemoryEfficientCrossAttention,
+        "softmax-xformers-ip": IPMemoryEfficientCrossAttention,
     }
     def __init__(self, dim, n_heads, d_head, dropout=0., context_dim=None, gated_ff=True, checkpoint=True,
                  disable_self_attn=False):
         super().__init__()
         attn_mode = "softmax-xformers" if XFORMERS_IS_AVAILBLE else "softmax"
         assert attn_mode in self.ATTENTION_MODES
-        attn_cls = self.ATTENTION_MODES[attn_mode]
+        attn_cls1 = self.ATTENTION_MODES[attn_mode]
+        attn_cls2 = self.ATTENTION_MODES[attn_mode+'-ip']
         self.disable_self_attn = disable_self_attn
-        self.attn1 = attn_cls(query_dim=dim, heads=n_heads, dim_head=d_head, dropout=dropout,
+        self.attn1 = attn_cls1(query_dim=dim, heads=n_heads, dim_head=d_head, dropout=dropout,
                               context_dim=context_dim if self.disable_self_attn else None)  # is a self-attention if not self.disable_self_attn
         self.ff = FeedForward(dim, dropout=dropout, glu=gated_ff)
-        self.attn2 = attn_cls(query_dim=dim, context_dim=context_dim,
+        self.attn2 = attn_cls2(query_dim=dim, context_dim=context_dim,
                               heads=n_heads, dim_head=d_head, dropout=dropout)  # is self-attn if context is none
         self.norm1 = nn.LayerNorm(dim)
         self.norm2 = nn.LayerNorm(dim)
@@ -287,7 +466,7 @@ class SpatialTransformer(nn.Module):
     def __init__(self, in_channels, n_heads, d_head,
                  depth=1, dropout=0., context_dim=None,
                  disable_self_attn=False, use_linear=False,
-                 use_checkpoint=True):
+                 use_checkpoint=True, use_ip=True):
         super().__init__()
         if exists(context_dim) and not isinstance(context_dim, list):
             context_dim = [context_dim]
