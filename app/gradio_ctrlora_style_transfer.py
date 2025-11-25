@@ -170,6 +170,7 @@ def load_state_dict_ip(ip_ckpt, ip_scale=1.0, target='Load original IP-Adapter')
                     'model.diffusion_model.output_blocks.5.1.transformer_blocks.0.attn2.ip_scale': torch.tensor(ip_scale)
                 }
         model.load_state_dict(ip_block, strict=False)
+    print("style mode: ", target)
 
 
 def get_config(lora_ckpt, lora_num=1):
@@ -203,10 +204,7 @@ def build_model(sd_ckpt, cn_ckpt, lora_ckpts, ip_ckpt=None, ip_scale=None, targe
     assert lora_ckpts is not None
     assert len(lora_ckpts) == lora_num
 
-    if ip_ckpt is not None:
-        current_config = os.path.join(CONFIG_DIR, 'inference/ctrlora_style_sd15_rank128_1lora.yaml')
-    else:
-        current_config = get_config(lora_ckpts[0], lora_num)
+    current_config = os.path.join(CONFIG_DIR, 'inference/ctrlora_style_sd15_rank128_1lora.yaml')
 
     if current_config != last_config:
         print(f'Loading config...')
@@ -215,14 +213,13 @@ def build_model(sd_ckpt, cn_ckpt, lora_ckpts, ip_ckpt=None, ip_scale=None, targe
         ddim_sampler = DDIMSampler(model)
         print(f'Config loaded')
 
-    if last_ckpts != (sd_ckpt, cn_ckpt, lora_ckpts):
+    if last_ckpts != (sd_ckpt, cn_ckpt, lora_ckpts, ip_ckpt, target):
         print(f'Loading checkpoints')
         load_state_dict_sd(sd_ckpt)
         load_state_dict_cn(cn_ckpt)
         load_state_dict_lora(lora_ckpts)
-        if ip_ckpt is not None:
-            load_state_dict_ip(ip_ckpt, ip_scale, target)
-        last_ckpts = (sd_ckpt, cn_ckpt, lora_ckpts)
+        load_state_dict_ip(ip_ckpt, ip_scale, target)
+        last_ckpts = (sd_ckpt, cn_ckpt, lora_ckpts, ip_ckpt, target)
         print(f'Checkpoints loaded')
 
 
@@ -375,128 +372,6 @@ def reformat_prompt(prompt):
     return prompt
 
 
-def process(det, detected_image, prompt, n_prompt, num_samples, ddim_steps, guess_mode, strength, scale, seed, eta, sd_ckpt, cn_ckpt, lora_ckpt):
-    global model, ddim_sampler, last_ckpts, last_config
-
-    build_model(sd_ckpt, cn_ckpt, [lora_ckpt])
-
-    prompt = reformat_prompt(prompt)
-    n_prompt = reformat_prompt(n_prompt)
-    print(f'Prompt is: {prompt}')
-    print(f'Negative Prompt is: {n_prompt}')
-
-    with torch.no_grad():
-        detected_image = process_detected_image(det, detected_image)
-        H, W, C = detected_image.shape
-
-        control = torch.from_numpy(detected_image.copy()).float().cuda() / 255.0
-        control = torch.stack([control for _ in range(num_samples)], dim=0)
-        control = einops.rearrange(control, 'b h w c -> b c h w').clone()
-
-        if seed == -1:
-            seed = random.randint(0, 65535)
-        seed_everything(seed)
-
-        if config.save_memory:
-            model.low_vram_shift(is_diffusing=False)
-
-        cond = {"c_concat": [control], "c_crossattn": [model.get_learned_conditioning([prompt] * num_samples)]}
-        un_cond = {"c_concat": None if guess_mode else [control], "c_crossattn": [model.get_learned_conditioning([n_prompt] * num_samples)]}
-
-        if config.save_memory:
-            model.low_vram_shift(is_diffusing=True)
-
-        model.control_scales = [strength * (0.825 ** float(12 - i)) for i in range(13)] if guess_mode else ([strength] * 13)
-        # Magic number. IDK why. Perhaps because 0.825**12<0.01 but 0.826**12>0.01
-
-        shape = (4, H // 8, W // 8)
-        samples, intermediates = ddim_sampler.sample(ddim_steps, num_samples,
-                                                     shape, cond, verbose=False, eta=eta,
-                                                     unconditional_guidance_scale=scale,
-                                                     unconditional_conditioning=un_cond)
-
-        if config.save_memory:
-            model.low_vram_shift(is_diffusing=False)
-
-        x_samples = model.decode_first_stage(samples)
-        x_samples = (einops.rearrange(x_samples, 'b c h w -> b h w c') * 127.5 + 127.5).cpu().numpy().clip(0, 255).astype(np.uint8)
-
-        results = [x_samples[i] for i in range(num_samples)]
-    return [detected_image] + results
-
-
-def process2(det, det2, detected_image, detected_image2, prompt, n_prompt, num_samples, ddim_steps, guess_mode, strength, scale, seed, eta, sd_ckpt, cn_ckpt, lora_ckpt, lora2_ckpt, lora_weight, lora2_weight):
-    global model, ddim_sampler, last_ckpts, last_config
-
-    build_model(sd_ckpt, cn_ckpt, [lora_ckpt, lora2_ckpt], lora_num=2)
-
-    prompt = reformat_prompt(prompt)
-    n_prompt = reformat_prompt(n_prompt)
-    print(f'Prompt is: {prompt}')
-    print(f'Negative Prompt is: {n_prompt}')
-
-    with torch.no_grad():
-        detected_image = process_detected_image(det, detected_image)
-        detected_image2 = process_detected_image(det2, detected_image2)
-        H, W, C = detected_image.shape
-        H2, W2, C2 = detected_image2.shape
-
-        # center crop to smaller image
-        if H2 > H:
-            detected_image2 = detected_image2[(H2-H)//2:(H2+H)//2]
-        else:
-            detected_image = detected_image[(H-H2)//2:(H+H2)//2]
-        if W2 > W:
-            detected_image2 = detected_image2[:, (W2-W)//2:(W2+W)//2]
-        else:
-            detected_image = detected_image[:, (W-W2)//2:(W+W2)//2]
-        H, W, C = detected_image.shape
-        H2, W2, C2 = detected_image2.shape
-        assert H == H2 and W == W2
-
-        control = torch.from_numpy(detected_image.copy()).float().cuda() / 255.0
-        control = torch.stack([control for _ in range(num_samples)], dim=0)
-        control = einops.rearrange(control, 'b h w c -> b c h w').clone()
-
-        control2 = torch.from_numpy(detected_image2.copy()).float().cuda() / 255.0
-        control2 = torch.stack([control2 for _ in range(num_samples)], dim=0)
-        control2 = einops.rearrange(control2, 'b h w c -> b c h w').clone()
-
-        if seed == -1:
-            seed = random.randint(0, 65535)
-        seed_everything(seed)
-
-        if config.save_memory:
-            model.low_vram_shift(is_diffusing=False)
-
-        cond = {"c_concat": [control], "c_crossattn": [model.get_learned_conditioning([prompt] * num_samples)]}
-        un_cond = {"c_concat": None if guess_mode else [control], "c_crossattn": [model.get_learned_conditioning([n_prompt] * num_samples)]}
-        cond2 = {"c_concat": [control2], "c_crossattn": [model.get_learned_conditioning([prompt] * num_samples)]}
-        un_cond2 = {"c_concat": None if guess_mode else [control2], "c_crossattn": [model.get_learned_conditioning([n_prompt] * num_samples)]}
-
-        if config.save_memory:
-            model.low_vram_shift(is_diffusing=True)
-
-        model.control_scales = [strength * (0.825 ** float(12 - i)) for i in range(13)] if guess_mode else ([strength] * 13)
-        # Magic number. IDK why. Perhaps because 0.825**12<0.01 but 0.826**12>0.01
-
-        model.lora_weights = [lora_weight, lora2_weight]
-
-        shape = (4, H // 8, W // 8)
-        samples, intermediates = ddim_sampler.sample(ddim_steps, num_samples,
-                                                     shape, [cond, cond2], verbose=False, eta=eta,
-                                                     unconditional_guidance_scale=scale,
-                                                     unconditional_conditioning=[un_cond, un_cond2])
-
-        if config.save_memory:
-            model.low_vram_shift(is_diffusing=False)
-
-        x_samples = model.decode_first_stage(samples)
-        x_samples = (einops.rearrange(x_samples, 'b c h w -> b h w c') * 127.5 + 127.5).cpu().numpy().clip(0, 255).astype(np.uint8)
-
-        results = [x_samples[i] for i in range(num_samples)]
-    return [detected_image, detected_image2] + results
-
 # style transfer
 def process3(det, detected_image, style_img, prompt, n_prompt, num_samples, ddim_steps, guess_mode, strength, scale, seed, eta, ip_scale, target, use_neg_content_prompt, neg_content_prompt, neg_content_prompt_scale, sd_ckpt, cn_ckpt, lora_ckpt, ip_ckpt):
     global model, ddim_sampler, last_ckpts, last_config
@@ -585,21 +460,6 @@ def listdir_nr(path):
     files = [item for item in items if os.path.isfile(os.path.join(path, item))]
     return files
 
-
-def update_ckpts():
-    sd_ckpt = gr.Dropdown(label='Select stable diffusion checkpoint', choices=sorted(listdir_r(CKPT_SD15_DIR)))
-    cn_ckpt = gr.Dropdown(label='Select base controlnet checkpoint', choices=sorted(listdir_r(CKPT_BASECN_DIR)))
-    lora_ckpt = gr.Dropdown(label='Select lora checkpoint', choices=sorted(listdir_r(CKPT_LORAS_DIR)))
-    return sd_ckpt, cn_ckpt, lora_ckpt
-
-
-def update_ckpts2():
-    sd_ckpt = gr.Dropdown(label='Select stable diffusion checkpoint', choices=sorted(listdir_r(CKPT_SD15_DIR)))
-    cn_ckpt = gr.Dropdown(label='Select base controlnet checkpoint', choices=sorted(listdir_r(CKPT_BASECN_DIR)))
-    lora_ckpt = gr.Dropdown(label='Select lora1 checkpoint', choices=sorted(listdir_r(CKPT_LORAS_DIR)))
-    lora2_ckpt = gr.Dropdown(label='Select lora2 checkpoint', choices=sorted(listdir_r(CKPT_LORAS_DIR)))
-    return sd_ckpt, cn_ckpt, lora_ckpt, lora2_ckpt
-
 def update_ckpts3():
     sd_ckpt = gr.Dropdown(label='Select stable diffusion checkpoint', choices=sorted(listdir_r(CKPT_SD15_DIR)))
     cn_ckpt = gr.Dropdown(label='Select base controlnet checkpoint', choices=sorted(listdir_r(CKPT_BASECN_DIR)))
@@ -631,116 +491,6 @@ def update_n_prompt(n_prompt, evt: gr.SelectData):
 
 def update_visible(checkbox_value):
     return gr.update(visible=checkbox_value)
-
-def tab1():
-    with gr.Row():
-        sd_ckpt = gr.Dropdown(label='Select stable diffusion checkpoint', choices=sorted(listdir_r(CKPT_SD15_DIR)), scale=3)
-        cn_ckpt = gr.Dropdown(label='Select base controlnet checkpoint', choices=sorted(listdir_r(CKPT_BASECN_DIR)), scale=3)
-        lora_ckpt = gr.Dropdown(label='Select lora checkpoint', choices=sorted(listdir_r(CKPT_LORAS_DIR)), scale=3)
-        refresh_button = gr.Button(value="Refresh", scale=1)
-        run_button = gr.Button(value="Run", scale=1, variant='primary')
-
-    with gr.Row():
-        with gr.Column(scale=2):
-            with gr.Group():
-                prompt = gr.Textbox(label="Prompt", lines=3)
-                a_prompt_choices = gr.CheckboxGroup(choices=list(add_prompts.keys()), type="value", label="Examples")
-
-            with gr.Group():
-                n_prompt = gr.Textbox(label="Negative Prompt", lines=2)
-                n_prompt_choices = gr.CheckboxGroup(choices=list(neg_prompts.keys()), type="value", label="Examples")
-
-            with gr.Accordion("Basic options", open=True):
-                with gr.Group():
-                    with gr.Row():
-                        seed = gr.Slider(label="Seed", minimum=-1, maximum=2147483647, step=1, value=12345)
-                        num_samples = gr.Slider(label="Images", minimum=1, maximum=12, value=1, step=1)
-                        image_resolution = gr.Slider(label="Image Resolution", minimum=256, maximum=768, value=512, step=64)
-                        guess_mode = gr.Checkbox(label='Guess Mode', value=False, visible=False)
-                    with gr.Row():
-                        ddim_steps = gr.Slider(label="DDIM Steps", minimum=1, maximum=100, value=20, step=1)
-                        eta = gr.Slider(label="DDIM ETA", minimum=0.0, maximum=1.0, value=0.0, step=0.01)
-                        strength = gr.Slider(label="Control Strength", minimum=0.0, maximum=2.0, value=1.0, step=0.01)
-                        scale = gr.Slider(label="Guidance Scale", minimum=0.1, maximum=30.0, value=7.5, step=0.1)
-
-            with gr.Accordion("Condition", open=True):
-                with gr.Row():
-                    input_image = gr.ImageEditor(sources=['upload', 'clipboard'], type="numpy", layers=False)
-                    detected_image = gr.ImageEditor(sources=['upload', 'clipboard'], type="numpy", layers=False)
-                det = gr.Radio(choices=det_choices, type="value", value="none", label="Preprocessor")
-                detect_resolution = gr.Slider(label="Preprocessor Resolution", minimum=128, maximum=1024, value=512, step=1)
-                detect_button = gr.Button(value="Detect")
-            
-        with gr.Column(scale=1):
-            result_gallery = gr.Gallery(label='Output', show_label=False, elem_id="gallery", object_fit='scale-down', height=650)
-
-    refresh_button.click(fn=update_ckpts, inputs=[], outputs=[sd_ckpt, cn_ckpt, lora_ckpt])
-    a_prompt_choices.select(fn=update_prompt, inputs=[prompt], outputs=[prompt])
-    n_prompt_choices.select(fn=update_n_prompt, inputs=[n_prompt], outputs=[n_prompt])
-    detect_button.click(fn=detect, inputs=[det, input_image, detect_resolution, image_resolution], outputs=[detected_image])
-    run_button.click(fn=process, inputs=[det, detected_image, prompt, n_prompt, num_samples, ddim_steps, guess_mode, strength, scale, seed, eta, sd_ckpt, cn_ckpt, lora_ckpt], outputs=[result_gallery])
-
-
-def tab2():
-    with gr.Row():
-        sd_ckpt = gr.Dropdown(label='Select stable diffusion checkpoint', choices=sorted(listdir_r(CKPT_SD15_DIR)), scale=3)
-        cn_ckpt = gr.Dropdown(label='Select base controlnet checkpoint', choices=sorted(listdir_r(CKPT_BASECN_DIR)), scale=3)
-        lora_ckpt = gr.Dropdown(label='Select lora1 checkpoint', choices=sorted(listdir_r(CKPT_LORAS_DIR)), scale=3)
-        lora2_ckpt = gr.Dropdown(label='Select lora2 checkpoint', choices=sorted(listdir_r(CKPT_LORAS_DIR)), scale=3)
-        refresh_button = gr.Button(value="Refresh", scale=1)
-        run_button = gr.Button(value="Run", scale=1, variant='primary')
-
-    with gr.Row():
-        with gr.Column(scale=2):
-            with gr.Group():
-                prompt = gr.Textbox(label="Prompt", lines=3)
-                a_prompt_choices = gr.CheckboxGroup(choices=list(add_prompts.keys()), type="value", label="Examples")
-
-            with gr.Group():
-                n_prompt = gr.Textbox(label="Negative Prompt", lines=2)
-                n_prompt_choices = gr.CheckboxGroup(choices=list(neg_prompts.keys()), type="value", label="Examples")
-
-            with gr.Accordion("Basic options", open=True):
-                with gr.Group():
-                    with gr.Row():
-                        seed = gr.Slider(label="Seed", minimum=-1, maximum=2147483647, step=1, value=12345)
-                        num_samples = gr.Slider(label="Images", minimum=1, maximum=12, value=1, step=1)
-                        image_resolution = gr.Slider(label="Image Resolution", minimum=256, maximum=768, value=512, step=64)
-                        guess_mode = gr.Checkbox(label='Guess Mode', value=False, visible=False)
-                    with gr.Row():
-                        ddim_steps = gr.Slider(label="DDIM Steps", minimum=1, maximum=100, value=20, step=1)
-                        eta = gr.Slider(label="DDIM ETA", minimum=0.0, maximum=1.0, value=0.0, step=0.01)
-                        strength = gr.Slider(label="Control Strength", minimum=0.0, maximum=2.0, value=1.0, step=0.01)
-                        scale = gr.Slider(label="Guidance Scale", minimum=0.1, maximum=30.0, value=7.5, step=0.1)
-                    with gr.Row():
-                        lora_weight = gr.Slider(label="Condition 1 Weight", minimum=0.0, maximum=2.0, value=1.0, step=0.01)
-                        lora2_weight = gr.Slider(label="Condition 2 Weight", minimum=0.0, maximum=2.0, value=1.0, step=0.01)
-
-            with gr.Accordion("Condition 1", open=True):
-                with gr.Row():
-                    input_image = gr.ImageEditor(sources=['upload', 'clipboard'], type="numpy", layers=False)
-                    detected_image = gr.ImageEditor(sources=['upload', 'clipboard'], type="numpy", layers=False)
-                det = gr.Radio(choices=det_choices, type="value", value="none", label="Preprocessor")
-                detect_resolution = gr.Slider(label="Preprocessor Resolution", minimum=128, maximum=1024, value=512, step=1)
-                detect_button = gr.Button(value="Detect")
-
-            with gr.Accordion("Condition 2", open=True):
-                with gr.Row():
-                    input_image2 = gr.ImageEditor(sources=['upload', 'clipboard'], type="numpy", layers=False)
-                    detected_image2 = gr.ImageEditor(sources=['upload', 'clipboard'], type="numpy", layers=False)
-                det2 = gr.Radio(choices=det_choices, type="value", value="none", label="Preprocessor")
-                detect_resolution2 = gr.Slider(label="Preprocessor Resolution", minimum=128, maximum=1024, value=512, step=1)
-                detect_button2 = gr.Button(value="Detect")
-
-        with gr.Column(scale=1):
-            result_gallery = gr.Gallery(label='Output', show_label=False, elem_id="gallery", object_fit='scale-down', height=650)
-
-    refresh_button.click(fn=update_ckpts2, inputs=[], outputs=[sd_ckpt, cn_ckpt, lora_ckpt, lora2_ckpt])
-    a_prompt_choices.select(fn=update_prompt, inputs=[prompt], outputs=[prompt])
-    n_prompt_choices.select(fn=update_n_prompt, inputs=[n_prompt], outputs=[n_prompt])
-    detect_button.click(fn=detect, inputs=[det, input_image, detect_resolution, image_resolution], outputs=[detected_image])
-    detect_button2.click(fn=detect, inputs=[det2, input_image2, detect_resolution2, image_resolution], outputs=[detected_image2])
-    run_button.click(fn=process2, inputs=[det, det2, detected_image, detected_image2, prompt, n_prompt, num_samples, ddim_steps, guess_mode, strength, scale, seed, eta, sd_ckpt, cn_ckpt, lora_ckpt, lora2_ckpt, lora_weight, lora2_weight], outputs=[result_gallery])
 
 #style
 def tab3():
@@ -815,10 +565,6 @@ def main():
     with blocks:
         with gr.Row():
             gr.Markdown("## CtrLoRA")
-        with gr.Tab(label='Single condition'):
-            tab1()
-        with gr.Tab(label='Two conditions'):
-            tab2()
         with gr.Tab(label='Style Transfer'):
             tab3()
     blocks.launch(server_name='0.0.0.0', share=True)
