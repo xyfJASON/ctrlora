@@ -213,13 +213,13 @@ def build_model(sd_ckpt, cn_ckpt, lora_ckpts, ip_ckpt=None, ip_scale=None, targe
         ddim_sampler = DDIMSampler(model)
         print(f'Config loaded')
 
-    if last_ckpts != (sd_ckpt, cn_ckpt, lora_ckpts, ip_ckpt, target):
+    if last_ckpts != (sd_ckpt, cn_ckpt, lora_ckpts, ip_ckpt, ip_scale, target):
         print(f'Loading checkpoints')
         load_state_dict_sd(sd_ckpt)
         load_state_dict_cn(cn_ckpt)
         load_state_dict_lora(lora_ckpts)
         load_state_dict_ip(ip_ckpt, ip_scale, target)
-        last_ckpts = (sd_ckpt, cn_ckpt, lora_ckpts, ip_ckpt, target)
+        last_ckpts = (sd_ckpt, cn_ckpt, lora_ckpts, ip_ckpt, ip_scale, target)
         print(f'Checkpoints loaded')
 
 
