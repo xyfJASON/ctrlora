@@ -564,9 +564,8 @@ def main():
     blocks = gr.Blocks().queue()
     with blocks:
         with gr.Row():
-            gr.Markdown("## CtrLoRA")
-        with gr.Tab(label='Style Transfer'):
-            tab3()
+            gr.Markdown("## CtrLoRA + InstantStyle")
+        tab3()
     blocks.launch(server_name='0.0.0.0', share=True)
 
 

@@ -216,6 +216,44 @@ Many thanks to [Kosinkadink](https://github.com/Kosinkadink) for his hard work t
 
 
 
+## 🖼️ "Spatial + Style" Control
+
+Many thanks to [Lianchen-li](https://github.com/Lianchen-li) for integrating [InstantStyle](https://github.com/instantX-research/InstantStyle) with CtrLoRA to support "spatial + style" control!
+
+To run the gradio demo, first download IP Adapter from [this repo](https://huggingface.co/h94/IP-Adapter). You need to download the `models` directory, rename it to `ip-adapter`, and put it into `./ckpts/`.
+Or you can run the following commands to download the required files:
+
+```shell
+mkdir -p ./ckpts/ip-adapter
+mkdir -p ./ckpts/ip-adapter/image_encoder
+wget https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter_sd15.bin -P ./ckpts/ip-adapter
+wget https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/config.json -P ./ckpts/ip-adapter/image_encoder
+wget https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/pytorch_model.bin -P ./ckpts/ip-adapter/image_encoder
+```
+
+Then launch the gradio demo:
+
+```shell
+python app/gradio_ctrlora_style_transfer.py
+```
+
+<details><summary><strong>Instructions</strong></summary>
+
+1. select the Stable Diffusion, Base Controlnet, LoRA, and IP Adapter checkpoint.
+2. write prompts and negative prompts.
+3. prepare a condition image
+    + upload an image to the "Content" panel in the "Reference images" block, select the preprocessor corresponding to the LoRA, and click "Detect".
+    + or upload the condition image directly, select the "none" preprocessor, and click "Detect".
+4. upload a style image to the "Style" panel in the "Reference images" block.
+    + optionally, you can choose style mode and use negative content prompt.
+5. click "Run" to generate images.
+
+<img src="./assets/gradio4.jpg" alt="gradio" style="width: 100%;" />
+
+</details>
+
+
+
 ## 🔥 Train a LoRA for Your Custom Condition
 
 *Based on our Base ControlNet, you can train a LoRA for your custom condition with as few as 1,000 images and less than 1 hour on a single GPU (20GB).*

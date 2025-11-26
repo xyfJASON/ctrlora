@@ -8,7 +8,7 @@ from cldm.cldm import ControlNet, ControlLDM
 from cldm.lora import LoRALinearLayer, LoRACompatibleLinear
 from cldm.switchable import SwitchableConv2d, SwitchableLayerNorm, SwitchableGroupNorm
 from ldm.modules.diffusionmodules.util import timestep_embedding
-import ipdb
+
 
 class ControlNetInference(ControlNet):
     def __init__(self, lora_rank=128, lora_num=1, *args, **kwargs):
