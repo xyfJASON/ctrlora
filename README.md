@@ -63,6 +63,11 @@ We first train a **Base ControlNet** along with **condition-specific LoRAs** on 
 |<img src="./assets/style-transfer.jpg" alt="style-transfer" style="width: 100%" />|
 |-|
 
+### 🎨 Spatial + style control (integrated with [InstantStyle](https://github.com/instantX-research/InstantStyle))
+
+| <img src="./assets/instant-style.jpg" alt="style-transfer" style="width: 100%" /> |
+|-|
+
 
 ## 🛠️ Installation
 
@@ -110,6 +115,8 @@ You also need to download the **SD1.5-based Models** and put them into `./ckpts/
 
 ## 🚀 Gradio Demo
 
+### 🚀 Spatial Control
+
 ```shell
 python app/gradio_ctrlora.py
 ```
@@ -150,6 +157,33 @@ python app/gradio_ctrlora.py
 8. click "Run" to generate images.
 
 <img src="./assets/gradio3.jpg" alt="gradio3" style="width: 100%;" />
+
+</details>
+
+
+### 🚀 Spatial + Style Control
+
+Many thanks to [Lianchen-li](https://github.com/Lianchen-li) for integrating [InstantStyle](https://github.com/instantX-research/InstantStyle) with CtrLoRA to support "spatial + style" control!
+
+To run the gradio demo, first download IP Adapter from [this repo](https://huggingface.co/h94/IP-Adapter). You need to download the `models` directory, rename it to `ip-adapter`, and put it into `./ckpts/`.
+Then launch the gradio demo:
+
+```shell
+python app/gradio_ctrlora_style_transfer.py
+```
+
+<details><summary><strong>Instructions</strong></summary>
+
+1. select the Stable Diffusion, Base Controlnet, LoRA, and IP Adapter checkpoint.
+2. write prompts and negative prompts.
+3. prepare a condition image
+    + upload an image to the "Content" panel in the "Reference images" block, select the preprocessor corresponding to the LoRA, and click "Detect".
+    + or upload the condition image directly, select the "none" preprocessor, and click "Detect".
+4. upload a style image to the "Style" panel in the "Reference images" block.
+    + optionally, you can choose style mode and use negative content prompt.
+5. click "Run" to generate images.
+
+<img src="./assets/gradio4.jpg" alt="gradio" style="width: 100%;" />
 
 </details>
 
@@ -213,44 +247,6 @@ Many thanks to [Kosinkadink](https://github.com/Kosinkadink) for his hard work t
 | <img src="./assets/workflow-ctrlora-canny.jpg" style="width: 100%;" />                                                                                 | <img src="./assets/workflow-ctrlora-style-transfer.jpg" style="width: 100%;" />                                                                                      |
 | **[CtrLoRA-AnimateDiff-Lineart](https://raw.githubusercontent.com/xyfJASON/ctrlora/refs/heads/main/assets/workflow-ctrlora-animatediff-lineart.json)** | **[CtrLoRA-AnimateDiff-Style-Transfer](https://raw.githubusercontent.com/xyfJASON/ctrlora/refs/heads/main/assets/workflow-ctrlora-animatediff-style-transfer.json)** |
 | <img src="./assets/workflow-ctrlora-animatediff-lineart.jpg" style="width: 100%;" />                                                                   | <img src="./assets/workflow-ctrlora-animatediff-style-transfer.jpg" style="width: 100%;" />                                                                          |
-
-
-
-## 🖼️ "Spatial + Style" Control
-
-Many thanks to [Lianchen-li](https://github.com/Lianchen-li) for integrating [InstantStyle](https://github.com/instantX-research/InstantStyle) with CtrLoRA to support "spatial + style" control!
-
-To run the gradio demo, first download IP Adapter from [this repo](https://huggingface.co/h94/IP-Adapter). You need to download the `models` directory, rename it to `ip-adapter`, and put it into `./ckpts/`.
-Or you can run the following commands to download the required files:
-
-```shell
-mkdir -p ./ckpts/ip-adapter
-mkdir -p ./ckpts/ip-adapter/image_encoder
-wget https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter_sd15.bin -P ./ckpts/ip-adapter
-wget https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/config.json -P ./ckpts/ip-adapter/image_encoder
-wget https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/pytorch_model.bin -P ./ckpts/ip-adapter/image_encoder
-```
-
-Then launch the gradio demo:
-
-```shell
-python app/gradio_ctrlora_style_transfer.py
-```
-
-<details><summary><strong>Instructions</strong></summary>
-
-1. select the Stable Diffusion, Base Controlnet, LoRA, and IP Adapter checkpoint.
-2. write prompts and negative prompts.
-3. prepare a condition image
-    + upload an image to the "Content" panel in the "Reference images" block, select the preprocessor corresponding to the LoRA, and click "Detect".
-    + or upload the condition image directly, select the "none" preprocessor, and click "Detect".
-4. upload a style image to the "Style" panel in the "Reference images" block.
-    + optionally, you can choose style mode and use negative content prompt.
-5. click "Run" to generate images.
-
-<img src="./assets/gradio4.jpg" alt="gradio" style="width: 100%;" />
-
-</details>
 
 
 
