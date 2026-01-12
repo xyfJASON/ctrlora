@@ -322,3 +322,9 @@ fidelity --gpu 0 --fid --isc --input1 INPUT1 --input2 INPUT2
 
 - `--input1`: Path to the directory containing the generated images.
 - `--input2`: Path to the directory containing the ground-truth images.
+
+> **Note**: Additional comments for Lineart evaluation.
+> 
+> Since the Lineart annotator introduces randomness through its coarse parameter, please follow the steps below to ensure a correct evaluation.
+> 1. Run `python scripts/evaluate_lineart_is_coarse.py --sample_dir SAMPLE_DIR` to detect whether the coarse parameter is used in the generated images.
+> 2. Run `python scripts/evaluate_lineart.py --sample_dir SAMPLE_DIR` for evaluation.
