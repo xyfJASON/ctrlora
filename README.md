@@ -327,10 +327,10 @@ This project is built upon Stable Diffusion, ControlNet, and UniControl. Thanks 
 If you find this project helpful, please consider citing:
 
 ```bibtex
-@article{xu2024ctrlora,
-  title={CtrLoRA: An Extensible and Efficient Framework for Controllable Image Generation},
-  author={Xu, Yifeng and He, Zhenliang and Shan, Shiguang and Chen, Xilin},
-  journal={arXiv preprint arXiv:2410.09400},
-  year={2024}
+@inproceedings{xu2024ctrlora,
+ title={CtrLoRA: An Extensible and Efficient Framework for Controllable Image Generation},
+ author={Xu, Yifeng and He, Zhenliang and Shan, Shiguang and Chen, Xilin},
+ journal={International Conference on Learning Representations (ICLR)},
+ year={2025}
 }
 ```
